@@ -73,8 +73,7 @@ export default function LinearSearch() {
 
   const codeLines = [
     'int linearSearch(int arr[], int n, int target) {',
-    '    for (int i = 0; i < n; i++) {  ← Loop iteration',
-    '        ',
+    '    for (int i = 0; i < n; i++) {  ← Loop iteration','',
     '        if (arr[i] == target)  ← Checking condition',
     '            return i;  ← Found!',
     '    }',
