@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bubble Sort</title>
+<title>Selection Sort</title>
 </head>
 
 <body style="background-color:#1a1a1a;min-height:100vh;color:white;margin:0;font-family:Arial, sans-serif;">
@@ -26,7 +26,7 @@
 <!-- Main Content -->
 <div style="flex:1;padding:40px;">
 
-<h1 style="text-align:center;font-size:48px;margin-bottom:10px;">Bubble Sort</h1>
+<h1 style="text-align:center;font-size:48px;margin-bottom:10px;">Selection Sort</h1>
 
 <!-- Complexity Info -->
 <div style="display:flex;justify-content:center;gap:30px;margin-bottom:30px;font-size:16px;">
@@ -37,8 +37,6 @@
 
 <!-- Controls -->
 <div style="text-align:center;margin-bottom:30px;">
-  <label style="font-size:18px;margin-right:10px;">Speed:</label>
- 
   <label style="font-size:18px;margin-right:10px;">Speed (ms):</label>
   <input
     id="speedInput"
@@ -58,9 +56,6 @@
       margin-right:20px;
     "
   />
-  
-
-
 
   <button onclick="start()"
     style="padding:12px 30px;font-size:18px;background-color:#22c55e;color:white;border:none;border-radius:5px;cursor:pointer;margin-right:10px;">
@@ -117,19 +112,22 @@
 
 <script>
 let array = [5,2,8,1,9,3,7,4,6];
-let i = 0, j = 0;
+let i = 0;
+let j = 0;
+let minIdx = 0;
 let playing = false;
 let speed = 1000;
 let steps = 0;
 
 const codeLines = [
-  'void bubbleSort(int arr[], int n) {',
-  '    for (int i = 0; i < n - 1; i++) {',
-  '        for (int j = 0; j < n - i - 1; j++) {',
-  '            if (arr[j] > arr[j + 1]) {',
-  '                swap(arr[j], arr[j + 1]);',
-  '            }',
+  'void selectionSort(int arr[], int n) {',
+  '    for (int i = 0; i < n-1; i++) {',
+  '        int minIdx = i;',
+  '        for (int j = i+1; j < n; j++) {',
+  '            if (arr[j] < arr[minIdx])',
+  '                minIdx = j;',
   '        }',
+  '        if(minIdx != i) swap(arr[i], arr[minIdx]);',
   '    }',
   '}'
 ];
@@ -173,22 +171,23 @@ function renderCode(active) {
 function step() {
   if (!playing) return;
 
-  if (i < array.length - 1) {
-    if (j < array.length - i - 1) {
-      renderCode(3);
-      document.getElementById("message").innerText =
-        `Checking: ${array[j]} > ${array[j+1]} ?`;
-      renderArray([j,j+1]);
-
-      if (array[j] > array[j+1]) {
-        [array[j],array[j+1]] = [array[j+1],array[j]];
-        renderArray([], [j,j+1]);
-      }
+  if (i < array.length-1) {
+    if (j < array.length) {
+      renderCode(4);
+      document.getElementById("message").innerText = 
+        `Comparing arr[${j}] = ${array[j]} with current min arr[${minIdx}] = ${array[minIdx]}`;
+      if (array[j] < array[minIdx]) minIdx = j;
+      renderArray([j,minIdx]);
       j++;
     } else {
-      j = 0;
+      if (minIdx !== i) {
+        [array[i], array[minIdx]] = [array[minIdx], array[i]];
+        renderArray([], [i,minIdx]);
+      }
       i++;
-      steps++;
+      j = i+1;
+      minIdx = i;
+      steps = i;
       document.getElementById("steps").innerText = steps;
     }
     setTimeout(step, speed);
@@ -201,13 +200,18 @@ function step() {
 function start() {
   reset();
   playing = true;
+  minIdx = i;
+  j = i+1;
   step();
 }
 
 function reset() {
   array = [5,2,8,1,9,3,7,4,6];
-  i = j = steps = 0;
+  i = 0;
+  j = 1;
+  minIdx = i;
   playing = false;
+  steps = 0;
   document.getElementById("steps").innerText = 0;
   document.getElementById("message").innerText = "Click Start!";
   renderArray();
