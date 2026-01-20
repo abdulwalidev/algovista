@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Two Sum Visualization</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #0f1220;
+    color: #eaeaf0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+
+  .container {
+    padding: 20px;
+    max-width: 1000px;
+    margin: auto;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    text-align: center;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  input, button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+  }
+
+  input {
+    width: 140px;
+  }
+
+  button {
+    cursor: pointer;
+    background: #4f46e5;
+    color: white;
+  }
+
+  button:disabled {
+    background: #333;
+    cursor: not-allowed;
+  }
+
+  .array {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 10px;
+    height: 260px;
+    margin-top: 20px;
+  }
+
+  .bar {
+    width: 50px;
+    background: #374151;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+  }
+
+  .bar span {
+    position: absolute;
+    bottom: -22px;
+    font-size: 13px;
+  }
+
+  .value {
+    padding-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .current {
+    background: #f59e0b;
+  }
+
+  .found {
+    background: #22c55e;
+  }
+
+  .checked {
+    background: #ef4444;
+  }
+
+  .status {
+    margin-top: 15px;
+    text-align: center;
+    min-height: 24px;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Two Sum Visualization</h1>
+
+  <div class="controls">
+    <input id="arrayInput" placeholder="Array (e.g. 2,7,11,15)" />
+    <input id="targetInput" placeholder="Target (e.g. 9)" />
+    <button id="startBtn">Start</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+
+  <div id="array" class="array"></div>
+
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+  const arrayDiv = document.getElementById("array");
+  const statusDiv = document.getElementById("status");
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  let nums = [];
+  let target = 0;
+  let delay = 800;
+
+  function sleep(ms) {
+    return new Promise(res => setTimeout(res, ms));
+  }
+
+  function renderArray(highlight = {}) {
+    arrayDiv.innerHTML = "";
+    nums.forEach((num, i) => {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+
+      if (highlight.found?.includes(i)) bar.classList.add("found");
+      else if (highlight.current?.includes(i)) bar.classList.add("current");
+      else if (highlight.checked?.includes(i)) bar.classList.add("checked");
+
+      bar.style.height = `${num * 10 + 40}px`;
+
+      const value = document.createElement("div");
+      value.className = "value";
+      value.textContent = num;
+
+      const idx = document.createElement("span");
+      idx.textContent = i;
+
+      bar.appendChild(value);
+      bar.appendChild(idx);
+      arrayDiv.appendChild(bar);
+    });
+  }
+
+  async function twoSumVisualize() {
+    startBtn.disabled = true;
+    statusDiv.textContent = "Searching...";
+
+    const map = new Map();
+
+    for (let i = 0; i < nums.length; i++) {
+      renderArray({ current: [i] });
+      await sleep(delay);
+
+      const complement = target - nums[i];
+
+      if (map.has(complement)) {
+        const j = map.get(complement);
+        renderArray({ found: [i, j] });
+        statusDiv.textContent = `Found: indices ${j} and ${i}`;
+        startBtn.disabled = false;
+        return;
+      }
+
+      map.set(nums[i], i);
+      renderArray({ checked: [i] });
+      await sleep(delay / 2);
+    }
+
+    statusDiv.textContent = "No solution found";
+    startBtn.disabled = false;
+  }
+
+  startBtn.onclick = () => {
+    const arrVal = document.getElementById("arrayInput").value;
+    const tarVal = document.getElementById("targetInput").value;
+
+    nums = arrVal.split(",").map(n => Number(n.trim())).filter(n => !isNaN(n));
+    target = Number(tarVal);
+
+    if (!nums.length || isNaN(target)) {
+      statusDiv.textContent = "Invalid input";
+      return;
+    }
+
+    renderArray();
+    twoSumVisualize();
+  };
+
+  resetBtn.onclick = () => {
+    nums = [];
+    arrayDiv.innerHTML = "";
+    statusDiv.textContent = "";
+    startBtn.disabled = false;
+  };
+</script>
+</body>
+</html>
