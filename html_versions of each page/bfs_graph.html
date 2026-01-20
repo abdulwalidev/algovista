@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Graph BFS</title>
+</head>
+
+<body style="background-color:#1a1a1a;min-height:100vh;color:white;margin:0;font-family:Arial, sans-serif;">
+
+<!-- Top Banner Ad -->
+<div style="background-color:#2a2a2a;padding:15px;text-align:center;border-bottom:1px solid #444;">
+  <div style="width:728px;height:90px;background-color:#333;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;">
+    Ad Space (728x90)
+  </div>
+</div>
+
+<div style="display:flex;max-width:1400px;margin:0 auto;">
+
+<!-- Sidebar Ad -->
+<div style="width:160px;padding:20px;">
+  <div style="position:sticky;top:20px;background-color:#333;width:160px;height:600px;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;font-size:12px;text-align:center;">
+    Ad Space<br>(160x600)
+  </div>
+</div>
+
+<!-- Main Content -->
+<div style="flex:1;padding:40px;">
+
+<h1 style="text-align:center;font-size:48px;margin-bottom:10px;">Graph BFS</h1>
+
+<!-- Complexity Info -->
+<div style="display:flex;justify-content:center;gap:30px;margin-bottom:30px;font-size:16px;">
+  <div>Time: <span style="color:#22c55e;font-weight:bold;">O(V + E)</span></div>
+  <div>Space: <span style="color:#22c55e;font-weight:bold;">O(V)</span></div>
+  <div>Steps: <span id="steps" style="color:#eab308;font-weight:bold;">0</span></div>
+</div>
+
+<!-- Controls -->
+<div style="text-align:center;margin-bottom:30px;">
+  <label style="font-size:18px;margin-right:10px;">Speed (ms):</label>
+  <input
+    id="speedInput"
+    type="number"
+    value="1000"
+    min="100"
+    max="5000"
+    step="100"
+    style="
+      width:100px;
+      padding:10px;
+      font-size:18px;
+      background-color:#333;
+      color:white;
+      border:2px solid #555;
+      border-radius:5px;
+      margin-right:20px;
+    "
+  />
+
+  <button onclick="start()"
+    style="padding:12px 30px;font-size:18px;background-color:#22c55e;color:white;border:none;border-radius:5px;cursor:pointer;margin-right:10px;">
+    Start
+  </button>
+
+  <button onclick="reset()"
+    style="padding:12px 30px;font-size:18px;background-color:#ef4444;color:white;border:none;border-radius:5px;cursor:pointer;">
+    Reset
+  </button>
+</div>
+
+<!-- Message -->
+<div id="message"
+  style="text-align:center;font-size:20px;margin-bottom:30px;padding:15px;background-color:#333;border-radius:10px;min-height:60px;display:flex;align-items:center;justify-content:center;">
+  Click Start!
+</div>
+
+<!-- Graph Visualization -->
+<div id="graph"
+  style="display:flex;justify-content:center;gap:40px;margin-bottom:40px;">
+</div>
+
+<!-- Code -->
+<div style="background-color:#1e1e1e;border-radius:10px;padding:20px;margin-bottom:40px;">
+  <div style="color:#888;font-size:14px;margin-bottom:10px;font-weight:bold;">
+    C++ CODE (Execution Flow):
+  </div>
+  <pre id="code" style="font-family:monospace;font-size:16px;margin:0;line-height:1.8;"></pre>
+</div>
+
+<!-- Middle Ad -->
+<div style="background-color:#333;width:336px;height:280px;margin:40px auto;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;">
+  Ad Space (336x280)
+</div>
+
+</div>
+
+<!-- Right Sidebar Ad -->
+<div style="width:160px;padding:20px;">
+  <div style="position:sticky;top:20px;background-color:#333;width:160px;height:600px;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;font-size:12px;text-align:center;">
+    Ad Space<br>(160x600)
+  </div>
+</div>
+
+</div>
+
+<!-- Bottom Ad -->
+<div style="background-color:#2a2a2a;padding:20px;text-align:center;border-top:1px solid #444;margin-top:40px;">
+  <div style="width:728px;height:90px;background-color:#333;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;">
+    Ad Space (728x90)
+  </div>
+</div>
+
+<script>
+const graph = {
+  A: ["B", "C"],
+  B: ["D", "E"],
+  C: ["F"],
+  D: [],
+  E: ["F"],
+  F: []
+};
+
+let queue = [];
+let visited = new Set();
+let steps = 0;
+let speed = 1000;
+let playing = false;
+
+const codeLines = [
+  'void bfs(int start) {',
+  '    queue<int> q;',
+  '    visited[start] = true;',
+  '    q.push(start);',
+  '    while (!q.empty()) {',
+  '        int u = q.front(); q.pop();',
+  '        for (int v : adj[u]) {',
+  '            if (!visited[v]) {',
+  '                visited[v] = true;',
+  '                q.push(v);',
+  '            }',
+  '        }',
+  '    }',
+  '}'
+];
+
+function renderGraph(active=null) {
+  const container = document.getElementById("graph");
+  container.innerHTML = "";
+  Object.keys(graph).forEach(node => {
+    let bg = "#555";
+    if (visited.has(node)) bg = "#333";
+    if (node === active) bg = "#eab308";
+
+    container.innerHTML += `
+      <div style="text-align:center">
+        <div style="width:80px;height:80px;border-radius:50%;
+        background-color:${bg};
+        display:flex;align-items:center;justify-content:center;
+        font-size:28px;font-weight:bold;">
+        ${node}
+        </div>
+      </div>`;
+  });
+}
+
+function renderCode(active) {
+  const code = document.getElementById("code");
+  code.innerHTML = "";
+  codeLines.forEach((line, idx) => {
+    code.innerHTML += `
+      <div style="background-color:${active===idx?'#3a3a00':'transparent'};
+      padding:4px 8px;
+      border-left:${active===idx?'4px solid #eab308':'4px solid transparent'};">
+      ${line}
+      </div>`;
+  });
+}
+
+function step() {
+  if (!playing || queue.length === 0) {
+    document.getElementById("message").innerText = "Traversal Complete 🎉";
+    playing = false;
+    return;
+  }
+
+  const node = queue.shift();
+  visited.add(node);
+  steps++;
+  document.getElementById("steps").innerText = steps;
+
+  document.getElementById("message").innerText =
+    `Visiting node ${node}`;
+
+  renderGraph(node);
+  renderCode(5);
+
+  graph[node].forEach(n => {
+    if (!visited.has(n)) queue.push(n);
+  });
+
+  setTimeout(step, speed);
+}
+
+function start() {
+  reset();
+  playing = true;
+  queue = ["A"];
+  step();
+}
+
+function reset() {
+  queue = [];
+  visited = new Set();
+  steps = 0;
+  playing = false;
+  document.getElementById("steps").innerText = 0;
+  document.getElementById("message").innerText = "Click Start!";
+  renderGraph();
+  renderCode(-1);
+}
+
+document.getElementById("speedInput").oninput = e => {
+  speed = Number(e.target.value);
+};
+
+renderGraph();
+renderCode(-1);
+</script>
+
+</body>
+</html>
