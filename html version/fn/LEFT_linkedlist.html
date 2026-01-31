@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linked Lists - Learn Pointers Visually</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 380px 1fr 420px;
+  gap: 24px;
+  height: 100vh;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+/* LEFT PANEL - Visual List */
+.visual-panel {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+}
+
+.visual-panel h2 {
+  font-size: 26px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+}
+
+.intro-box {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  padding: 18px;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #555;
+}
+
+.intro-box b {
+  color: #333;
+  font-size: 15px;
+}
+
+.list-container {
+  flex: 1;
+  background: #fafbfc;
+  border-radius: 14px;
+  padding: 50px 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #e9ecef;
+}
+
+.list-svg {
+  min-width: 100%;
+  height: 240px;
+}
+
+.node {
+  cursor: pointer;
+  transition: all 0.3s;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+.node-data {
+  fill: white;
+  stroke: #333;
+  stroke-width: 3;
+}
+
+.node-next {
+  fill: white;
+  stroke: #333;
+  stroke-width: 3;
+}
+
+.node.active .node-data,
+.node.active .node-next {
+  fill: #fff3cd;
+  stroke: #ffc107;
+  stroke-width: 5;
+  filter: drop-shadow(0 6px 16px rgba(255, 193, 7, 0.4));
+}
+
+.node.new .node-data,
+.node.new .node-next {
+  fill: #d4edda;
+  stroke: #28a745;
+  stroke-width: 5;
+  filter: drop-shadow(0 6px 16px rgba(40, 167, 69, 0.4));
+}
+
+.node.removing .node-data,
+.node.removing .node-next {
+  fill: #f8d7da;
+  stroke: #dc3545;
+  stroke-width: 5;
+  filter: drop-shadow(0 6px 16px rgba(220, 53, 69, 0.4));
+}
+
+.arrow {
+  stroke: #495057;
+  stroke-width: 4;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+
+.arrow.active {
+  stroke: #ffc107;
+  stroke-width: 6;
+  animation: pulse-arrow 1s infinite;
+}
+
+.arrow.new {
+  stroke: #28a745;
+  stroke-width: 6;
+  animation: pulse-arrow 1s infinite;
+}
+
+.arrow.removing {
+  stroke: #dc3545;
+  stroke-width: 5;
+  stroke-dasharray: 8,8;
+  animation: dash 1s linear infinite;
+}
+
+@keyframes pulse-arrow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes dash {
+  to { stroke-dashoffset: -16; }
+}
+
+.text-label {
+  font-family: 'Consolas', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  fill: #333;
+}
+
+.pointer-label {
+  font-family: 'Consolas', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  fill: #667eea;
+}
+
+.step-info {
+  background: white;
+  padding: 18px 24px;
+  border-radius: 12px;
+  border: 3px solid #667eea;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+/* CENTER PANEL - Operations */
+.control-panel {
+  background: white;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.control-panel h2 {
+  font-size: 24px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.panel-subtitle {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.operation-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.operation-group h3 {
+  font-size: 13px;
+  color: #495057;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-button {
+  padding: 16px 24px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  width: 100%;
+  text-align: left;
+  position: relative;
+  padding-left: 44px;
+}
+
+.op-button::before {
+  content: '▸';
+  position: absolute;
+  left: 20px;
+  font-size: 16px;
+}
+
+.op-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.op-button:active {
+  transform: translateY(0);
+}
+
+.op-button.delete {
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  box-shadow: 0 4px 15px rgba(238, 9, 121, 0.3);
+}
+
+.op-button.delete::before {
+  content: '✕';
+}
+
+.op-button.delete:hover {
+  box-shadow: 0 6px 20px rgba(238, 9, 121, 0.5);
+}
+
+.op-button.search {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+}
+
+.op-button.search::before {
+  content: '🔍';
+}
+
+.op-button.search:hover {
+  box-shadow: 0 6px 20px rgba(17, 153, 142, 0.5);
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-group input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.step-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.step-controls-title {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.step-btn {
+  padding: 14px;
+  border: none;
+  background: #333;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.step-btn:hover:not(:disabled) {
+  background: #555;
+  transform: translateY(-2px);
+}
+
+.step-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.reset-btn {
+  padding: 14px;
+  border: none;
+  background: #e74c3c;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s;
+  grid-column: 1 / -1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reset-btn:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* RIGHT PANEL - Code */
+.code-panel {
+  background: #1e1e1e;
+  color: #dcdcdc;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #333;
+}
+
+.code-header h2 {
+  font-size: 18px;
+  color: #dcdcdc;
+}
+
+.lang-dropdown {
+  background: #2d2d2d;
+  color: #dcdcdc;
+  border: 1px solid #3d3d3d;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  outline: none;
+}
+
+.lang-dropdown:hover {
+  background: #3d3d3d;
+}
+
+.code-content {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.code-line {
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.code-line.highlight {
+  background: rgba(255, 215, 0, 0.25);
+  border-left: 4px solid #ffd700;
+  padding-left: 12px;
+  color: #fff;
+}
+
+.keyword { color: #569cd6; }
+.type { color: #4ec9b0; }
+.function { color: #dcdcaa; }
+.string { color: #ce9178; }
+.number { color: #b5cea8; }
+.comment { color: #6a9955; }
+
+.explanation-box {
+  background: #2d2d2d;
+  color: #dcdcdc;
+  padding: 18px;
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 10px;
+}
+
+.explanation-title {
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.checkpoint {
+  background: #1a472a;
+  color: #a8e6c4;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+
+.checkpoint-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #5dde8b;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  text-align: center;
+  max-width: 400px;
+}
+
+.modal-content h3 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+}
+
+.modal-content input {
+  padding: 12px 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.modal-content input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.modal-btn.confirm {
+  background: #28a745;
+  color: white;
+}
+
+.modal-btn.confirm:hover {
+  background: #218838;
+}
+
+.modal-btn.cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.modal-btn.cancel:hover {
+  background: #5a6268;
+}
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL - Operations -->
+<div class="control-panel">
+  <h2>⚙️ Operations</h2>
+  <div class="panel-subtitle">Choose an operation to see how linked lists work</div>
+
+  <div class="operation-group">
+    <h3>📥 Insert Operations</h3>
+    <button class="op-button" onclick="startOperation('insertHead')">Insert at Head</button>
+    <button class="op-button" onclick="startOperation('insertTail')">Insert at Tail</button>
+    <button class="op-button" onclick="startOperation('insertPos')">Insert at Position</button>
+  </div>
+
+  <div class="operation-group">
+    <h3>📤 Delete Operations</h3>
+    <button class="op-button delete" onclick="startOperation('deleteHead')">Delete at Head</button>
+    <button class="op-button delete" onclick="startOperation('deleteTail')">Delete at Tail</button>
+    <button class="op-button delete" onclick="startOperation('deletePos')">Delete at Position</button>
+  </div>
+
+  <div class="operation-group">
+    <h3>🔧 Other Operations</h3>
+    <button class="op-button search" onclick="startOperation('search')">Search Value</button>
+    <button class="op-button search" onclick="startOperation('reverse')">Reverse List</button>
+  </div>
+
+  <div class="step-controls">
+    <div class="step-controls-title">⏯️ Step Navigation</div>
+    <button class="step-btn" id="prevBtn" onclick="previousStep()" disabled>⬅ Prev</button>
+    <button class="step-btn" id="nextBtn" onclick="nextStep()" disabled>Next ➡</button>
+    <button class="reset-btn" onclick="resetOperation()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- CENTER PANEL - Visual -->
+<div class="visual-panel">
+  <h2>📦 Your Linked List</h2>
+  
+  <div class="intro-box">
+    <b>What you're seeing:</b><br>
+    • Each box is a <b>node</b><br>
+    • Left side = data (your value)<br>
+    • Right side = next (arrow to next node)<br>
+    • HEAD = where the list starts<br>
+    • NULL = end of the list
+  </div>
+
+  <div class="list-container" id="listContainer">
+    <svg class="list-svg" id="listSvg">
+      <defs>
+        <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 12 3.5, 0 7" fill="#495057" />
+        </marker>
+        <marker id="arrowhead-active" markerWidth="12" markerHeight="12" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 12 3.5, 0 7" fill="#ffc107" />
+        </marker>
+        <marker id="arrowhead-new" markerWidth="12" markerHeight="12" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 12 3.5, 0 7" fill="#28a745" />
+        </marker>
+        <marker id="arrowhead-removing" markerWidth="12" markerHeight="12" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 12 3.5, 0 7" fill="#dc3545" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="step-info" id="stepInfo">
+    Your linked list is empty. Click an operation to begin!
+  </div>
+</div>
+
+<!-- RIGHT PANEL - Code -->
+<div class="code-panel">
+  <div class="code-header">
+    <h2>💻 Code</h2>
+    <select class="lang-dropdown" id="langSelect" onchange="updateCode()">
+      <option value="cpp">C++</option>
+      <option value="python">Python</option>
+      <option value="pseudo">Pseudocode</option>
+    </select>
+  </div>
+
+  <div class="code-content" id="codeContent">
+    <div class="code-line"><span class="comment">// Select an operation to see code</span></div>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-title">🧠 What's Happening?</div>
+    <div id="explanationText">
+      Choose an operation from the left panel to start learning how linked lists work!
+    </div>
+  </div>
+
+  <div class="checkpoint" id="checkpoint" style="display:none;">
+    <div class="checkpoint-title">✓ Learning Checkpoint</div>
+    <div id="checkpointText"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="inputModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Enter Value</h3>
+    <input type="number" id="valueInput" placeholder="Value">
+    <input type="number" id="positionInput" placeholder="Position" style="display:none;">
+    <div class="modal-buttons">
+      <button class="modal-btn confirm" onclick="confirmInput()">OK</button>
+      <button class="modal-btn cancel" onclick="cancelInput()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Linked List implementation
+class Node {
+  constructor(data) {
+    this.data = data;
+    this.next = null;
+  }
+}
+
+class LinkedList {
+  constructor() {
+    this.head = null;
+  }
+
+  insertAtHead(data) {
+    const newNode = new Node(data);
+    newNode.next = this.head;
+    this.head = newNode;
+  }
+
+  insertAtTail(data) {
+    const newNode = new Node(data);
+    if (!this.head) {
+      this.head = newNode;
+      return;
+    }
+    let current = this.head;
+    while (current.next) {
+      current = current.next;
+    }
+    current.next = newNode;
+  }
+
+  insertAtPosition(data, pos) {
+    if (pos === 0) {
+      this.insertAtHead(data);
+      return;
+    }
+    const newNode = new Node(data);
+    let current = this.head;
+    for (let i = 0; i < pos - 1 && current; i++) {
+      current = current.next;
+    }
+    if (current) {
+      newNode.next = current.next;
+      current.next = newNode;
+    }
+  }
+
+  deleteAtHead() {
+    if (this.head) {
+      this.head = this.head.next;
+    }
+  }
+
+  deleteAtTail() {
+    if (!this.head) return;
+    if (!this.head.next) {
+      this.head = null;
+      return;
+    }
+    let current = this.head;
+    while (current.next.next) {
+      current = current.next;
+    }
+    current.next = null;
+  }
+
+  deleteAtPosition(pos) {
+    if (pos === 0) {
+      this.deleteAtHead();
+      return;
+    }
+    let current = this.head;
+    for (let i = 0; i < pos - 1 && current; i++) {
+      current = current.next;
+    }
+    if (current && current.next) {
+      current.next = current.next.next;
+    }
+  }
+
+  reverse() {
+    let prev = null;
+    let current = this.head;
+    while (current) {
+      const next = current.next;
+      current.next = prev;
+      prev = current;
+      current = next;
+    }
+    this.head = prev;
+  }
+
+  toArray() {
+    const result = [];
+    let current = this.head;
+    while (current) {
+      result.push(current.data);
+      current = current.next;
+    }
+    return result;
+  }
+}
+
+// Global state
+let list = new LinkedList();
+let currentOperation = null;
+let operationSteps = [];
+let currentStepIndex = -1;
+let currentLanguage = 'cpp';
+
+// Code templates
+const CODE_TEMPLATES = {
+  insertHead: {
+    cpp: [
+      '<span class="keyword">struct</span> <span class="type">Node</span> {',
+      '    <span class="keyword">int</span> data;',
+      '    <span class="type">Node</span>* next;',
+      '};',
+      '',
+      '<span class="keyword">void</span> <span class="function">insertAtHead</span>(<span class="type">Node</span>*& head, <span class="keyword">int</span> value) {',
+      '    <span class="type">Node</span>* newNode = <span class="keyword">new</span> <span class="type">Node</span>();',
+      '    newNode->data = value;',
+      '    newNode->next = head; <span class="comment">// new node points to old head</span>',
+      '    head = newNode; <span class="comment">// HEAD now points to new node</span>',
+      '}'
+    ],
+    python: [
+      '<span class="keyword">class</span> <span class="type">Node</span>:',
+      '    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="keyword">self</span>, data):',
+      '        <span class="keyword">self</span>.data = data',
+      '        <span class="keyword">self</span>.next = <span class="keyword">None</span>',
+      '',
+      '<span class="keyword">def</span> <span class="function">insert_at_head</span>(head, value):',
+      '    new_node = Node(value)',
+      '    new_node.next = head  <span class="comment"># new node points to old head</span>',
+      '    head = new_node  <span class="comment"># HEAD now points to new node</span>',
+      '    <span class="keyword">return</span> head'
+    ],
+    pseudo: [
+      'ALGORITHM InsertAtHead(head, value):',
+      '    ',
+      '    <span class="comment">// Create new node</span>',
+      '    newNode ← CREATE_NODE(value)',
+      '    ',
+      '    <span class="comment">// Connect new node to current list</span>',
+      '    newNode.next ← head',
+      '    ',
+      '    <span class="comment">// Update HEAD to point to new node</span>',
+      '    head ← newNode',
+      '    ',
+      'END ALGORITHM'
+    ]
+  },
+  insertTail: {
+    cpp: [
+      '<span class="keyword">void</span> <span class="function">insertAtTail</span>(<span class="type">Node</span>*& head, <span class="keyword">int</span> value) {',
+      '    <span class="type">Node</span>* newNode = <span class="keyword">new</span> <span class="type">Node</span>();',
+      '    newNode->data = value;',
+      '    newNode->next = <span class="keyword">nullptr</span>;',
+      '    ',
+      '    <span class="keyword">if</span> (head == <span class="keyword">nullptr</span>) {',
+      '        head = newNode;',
+      '        <span class="keyword">return</span>;',
+      '    }',
+      '    ',
+      '    <span class="type">Node</span>* current = head;',
+      '    <span class="keyword">while</span> (current->next != <span class="keyword">nullptr</span>) {',
+      '        current = current->next; <span class="comment">// traverse to end</span>',
+      '    }',
+      '    current->next = newNode; <span class="comment">// attach new node</span>',
+      '}'
+    ],
+    python: [
+      '<span class="keyword">def</span> <span class="function">insert_at_tail</span>(head, value):',
+      '    new_node = Node(value)',
+      '    ',
+      '    <span class="keyword">if</span> head <span class="keyword">is</span> <span class="keyword">None</span>:',
+      '        <span class="keyword">return</span> new_node',
+      '    ',
+      '    current = head',
+      '    <span class="keyword">while</span> current.next <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:',
+      '        current = current.next  <span class="comment"># traverse to end</span>',
+      '    ',
+      '    current.next = new_node  <span class="comment"># attach new node</span>',
+      '    <span class="keyword">return</span> head'
+    ],
+    pseudo: [
+      'ALGORITHM InsertAtTail(head, value):',
+      '    ',
+      '    newNode ← CREATE_NODE(value)',
+      '    ',
+      '    IF head = NULL THEN:',
+      '        head ← newNode',
+      '        RETURN',
+      '    END IF',
+      '    ',
+      '    current ← head',
+      '    WHILE current.next ≠ NULL DO:',
+      '        current ← current.next  <span class="comment">// move to next node</span>',
+      '    END WHILE',
+      '    ',
+      '    current.next ← newNode  <span class="comment">// attach at end</span>',
+      '    ',
+      'END ALGORITHM'
+    ]
+  },
+  deleteHead: {
+    cpp: [
+      '<span class="keyword">void</span> <span class="function">deleteAtHead</span>(<span class="type">Node</span>*& head) {',
+      '    <span class="keyword">if</span> (head == <span class="keyword">nullptr</span>) <span class="keyword">return</span>;',
+      '    ',
+      '    <span class="type">Node</span>* temp = head;',
+      '    head = head->next; <span class="comment">// move HEAD forward</span>',
+      '    <span class="keyword">delete</span> temp; <span class="comment">// remove old head</span>',
+      '}'
+    ],
+    python: [
+      '<span class="keyword">def</span> <span class="function">delete_at_head</span>(head):',
+      '    <span class="keyword">if</span> head <span class="keyword">is</span> <span class="keyword">None</span>:',
+      '        <span class="keyword">return</span> <span class="keyword">None</span>',
+      '    ',
+      '    head = head.next  <span class="comment"># move HEAD forward</span>',
+      '    <span class="keyword">return</span> head'
+    ],
+    pseudo: [
+      'ALGORITHM DeleteAtHead(head):',
+      '    ',
+      '    IF head = NULL THEN:',
+      '        RETURN',
+      '    END IF',
+      '    ',
+      '    <span class="comment">// Move HEAD to next node</span>',
+      '    head ← head.next',
+      '    ',
+      'END ALGORITHM'
+    ]
+  },
+  reverse: {
+    cpp: [
+      '<span class="keyword">void</span> <span class="function">reverse</span>(<span class="type">Node</span>*& head) {',
+      '    <span class="type">Node</span>* prev = <span class="keyword">nullptr</span>;',
+      '    <span class="type">Node</span>* current = head;',
+      '    <span class="type">Node</span>* next = <span class="keyword">nullptr</span>;',
+      '    ',
+      '    <span class="keyword">while</span> (current != <span class="keyword">nullptr</span>) {',
+      '        next = current->next; <span class="comment">// save next</span>',
+      '        current->next = prev; <span class="comment">// reverse link</span>',
+      '        prev = current; <span class="comment">// move prev forward</span>',
+      '        current = next; <span class="comment">// move current forward</span>',
+      '    }',
+      '    head = prev; <span class="comment">// update HEAD</span>',
+      '}'
+    ],
+    python: [
+      '<span class="keyword">def</span> <span class="function">reverse</span>(head):',
+      '    prev = <span class="keyword">None</span>',
+      '    current = head',
+      '    ',
+      '    <span class="keyword">while</span> current <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:',
+      '        next_node = current.next  <span class="comment"># save next</span>',
+      '        current.next = prev  <span class="comment"># reverse link</span>',
+      '        prev = current  <span class="comment"># move prev forward</span>',
+      '        current = next_node  <span class="comment"># move current forward</span>',
+      '    ',
+      '    <span class="keyword">return</span> prev  <span class="comment"># new head</span>'
+    ],
+    pseudo: [
+      'ALGORITHM Reverse(head):',
+      '    ',
+      '    prev ← NULL',
+      '    current ← head',
+      '    ',
+      '    WHILE current ≠ NULL DO:',
+      '        next ← current.next  <span class="comment">// save reference</span>',
+      '        current.next ← prev  <span class="comment">// flip arrow</span>',
+      '        prev ← current  <span class="comment">// advance prev</span>',
+      '        current ← next  <span class="comment">// advance current</span>',
+      '    END WHILE',
+      '    ',
+      '    head ← prev  <span class="comment">// update HEAD</span>',
+      '    ',
+      'END ALGORITHM'
+    ]
+  }
+};
+
+// Initialize with sample data
+list.insertAtHead(12);
+list.insertAtHead(7);
+list.insertAtHead(3);
+
+// Render list
+function renderList() {
+  const svg = document.getElementById('listSvg');
+  svg.innerHTML = svg.querySelector('defs').outerHTML; // Keep defs
+
+  const nodes = [];
+  let current = list.head;
+  while (current) {
+    nodes.push(current);
+    current = current.next;
+  }
+
+  const nodeWidth = 140;
+  const nodeHeight = 70;
+  const nodeSpacing = 100;
+  const startY = 85;
+  
+  // Calculate total width needed
+  const totalListWidth = nodes.length > 0 
+    ? nodes.length * nodeWidth + (nodes.length - 1) * nodeSpacing + 200
+    : 400;
+  
+  // Center the list
+  const svgWidth = Math.max(parseInt(svg.getAttribute('width')) || 800, totalListWidth);
+  const startX = Math.max(100, (svgWidth - totalListWidth) / 2 + 100);
+
+  // Draw HEAD pointer
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  
+  const headText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  headText.setAttribute('x', startX - 30);
+  headText.setAttribute('y', startY - 40);
+  headText.setAttribute('class', 'pointer-label');
+  headText.setAttribute('font-size', '18');
+  headText.setAttribute('font-weight', 'bold');
+  headText.textContent = 'HEAD';
+  g.appendChild(headText);
+
+  if (list.head) {
+    const headArrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    headArrow.setAttribute('x1', startX + 15);
+    headArrow.setAttribute('y1', startY - 25);
+    headArrow.setAttribute('x2', startX + 15);
+    headArrow.setAttribute('y2', startY - 5);
+    headArrow.setAttribute('class', 'arrow');
+    headArrow.setAttribute('stroke-width', '4');
+    g.appendChild(headArrow);
+  }
+
+  svg.appendChild(g);
+
+  // Draw nodes
+  nodes.forEach((node, index) => {
+    const x = startX + index * (nodeWidth + nodeSpacing);
+    const nodeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    nodeG.setAttribute('class', 'node');
+
+    // Data box (60% of width)
+    const dataRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    dataRect.setAttribute('x', x);
+    dataRect.setAttribute('y', startY);
+    dataRect.setAttribute('width', nodeWidth * 0.6);
+    dataRect.setAttribute('height', nodeHeight);
+    dataRect.setAttribute('rx', '6');
+    dataRect.setAttribute('class', 'node-data');
+    nodeG.appendChild(dataRect);
+
+    const dataText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    dataText.setAttribute('x', x + nodeWidth * 0.3);
+    dataText.setAttribute('y', startY + nodeHeight / 2);
+    dataText.setAttribute('class', 'text-label');
+    dataText.setAttribute('text-anchor', 'middle');
+    dataText.setAttribute('dominant-baseline', 'middle');
+    dataText.textContent = node.data;
+    nodeG.appendChild(dataText);
+
+    // Divider line between boxes
+    const divider = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    divider.setAttribute('x1', x + nodeWidth * 0.6);
+    divider.setAttribute('y1', startY + 5);
+    divider.setAttribute('x2', x + nodeWidth * 0.6);
+    divider.setAttribute('y2', startY + nodeHeight - 5);
+    divider.setAttribute('stroke', '#666');
+    divider.setAttribute('stroke-width', '2');
+    divider.setAttribute('stroke-dasharray', '4,3');
+    nodeG.appendChild(divider);
+
+    // Next box (40% of width)
+    const nextRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    nextRect.setAttribute('x', x + nodeWidth * 0.6);
+    nextRect.setAttribute('y', startY);
+    nextRect.setAttribute('width', nodeWidth * 0.4);
+    nextRect.setAttribute('height', nodeHeight);
+    nextRect.setAttribute('rx', '6');
+    nextRect.setAttribute('class', 'node-next');
+    nodeG.appendChild(nextRect);
+
+    const nextText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    nextText.setAttribute('x', x + nodeWidth * 0.8);
+    nextText.setAttribute('y', startY + nodeHeight / 2);
+    nextText.setAttribute('class', 'text-label');
+    nextText.setAttribute('text-anchor', 'middle');
+    nextText.setAttribute('dominant-baseline', 'middle');
+    nextText.setAttribute('font-size', '14');
+    nextText.textContent = 'next';
+    nodeG.appendChild(nextText);
+
+    svg.appendChild(nodeG);
+
+    // Arrow to next node or NULL
+    if (node.next) {
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      arrow.setAttribute('x1', x + nodeWidth + 5);
+      arrow.setAttribute('y1', startY + nodeHeight / 2);
+      arrow.setAttribute('x2', x + nodeWidth + nodeSpacing - 15);
+      arrow.setAttribute('y2', startY + nodeHeight / 2);
+      arrow.setAttribute('class', 'arrow');
+      svg.appendChild(arrow);
+    } else {
+      const nullText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      nullText.setAttribute('x', x + nodeWidth + 50);
+      nullText.setAttribute('y', startY + nodeHeight / 2);
+      nullText.setAttribute('class', 'pointer-label');
+      nullText.setAttribute('dominant-baseline', 'middle');
+      nullText.setAttribute('font-size', '18');
+      nullText.setAttribute('font-weight', 'bold');
+      nullText.textContent = 'NULL';
+      svg.appendChild(nullText);
+
+      const nullArrow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      nullArrow.setAttribute('x1', x + nodeWidth + 5);
+      nullArrow.setAttribute('y1', startY + nodeHeight / 2);
+      nullArrow.setAttribute('x2', x + nodeWidth + 35);
+      nullArrow.setAttribute('y2', startY + nodeHeight / 2);
+      nullArrow.setAttribute('class', 'arrow');
+      nullArrow.setAttribute('stroke-width', '4');
+      svg.appendChild(nullArrow);
+    }
+  });
+
+  // Adjust SVG width for centering
+  const finalWidth = Math.max(800, totalListWidth);
+  svg.setAttribute('width', finalWidth);
+}
+
+// Start operation
+function startOperation(op) {
+  currentOperation = op;
+  
+  if (op === 'insertHead' || op === 'insertTail' || op === 'search') {
+    showInputModal(op);
+  } else if (op === 'insertPos') {
+    showInputModal(op, true);
+  } else if (op === 'deleteHead') {
+    if (!list.head) {
+      alert('List is empty!');
+      return;
+    }
+    executeOperation(op);
+  } else if (op === 'deleteTail' || op === 'deletePos') {
+    if (!list.head) {
+      alert('List is empty!');
+      return;
+    }
+    if (op === 'deletePos') {
+      showInputModal(op, true, true);
+    } else {
+      executeOperation(op);
+    }
+  } else if (op === 'reverse') {
+    if (!list.head || !list.head.next) {
+      alert('Need at least 2 nodes to reverse!');
+      return;
+    }
+    executeOperation(op);
+  }
+}
+
+// Input modal
+function showInputModal(op, needsPos = false, deleteMode = false) {
+  const modal = document.getElementById('inputModal');
+  const valueInput = document.getElementById('valueInput');
+  const posInput = document.getElementById('positionInput');
+  const title = document.getElementById('modalTitle');
+
+  if (op === 'search') {
+    title.textContent = 'Enter Value to Search';
+    valueInput.style.display = 'block';
+    posInput.style.display = 'none';
+  } else if (needsPos) {
+    if (deleteMode) {
+      title.textContent = 'Enter Position to Delete';
+      valueInput.style.display = 'none';
+    } else {
+      title.textContent = 'Enter Value and Position';
+      valueInput.style.display = 'block';
+    }
+    posInput.style.display = 'block';
+  } else {
+    title.textContent = 'Enter Value';
+    valueInput.style.display = 'block';
+    posInput.style.display = 'none';
+  }
+
+  valueInput.value = '';
+  posInput.value = '';
+  modal.classList.add('show');
+  (valueInput.style.display !== 'none' ? valueInput : posInput).focus();
+}
+
+function confirmInput() {
+  const value = parseInt(document.getElementById('valueInput').value);
+  const pos = parseInt(document.getElementById('positionInput').value);
+  
+  document.getElementById('inputModal').classList.remove('show');
+  
+  executeOperation(currentOperation, value, pos);
+}
+
+function cancelInput() {
+  document.getElementById('inputModal').classList.remove('show');
+  currentOperation = null;
+}
+
+// Execute operation and generate steps
+function executeOperation(op, value, pos) {
+  operationSteps = [];
+  currentStepIndex = -1;
+
+  // Generate steps based on operation
+  if (op === 'insertHead') {
+    generateInsertHeadSteps(value);
+  } else if (op === 'insertTail') {
+    generateInsertTailSteps(value);
+  } else if (op === 'deleteHead') {
+    generateDeleteHeadSteps();
+  } else if (op === 'reverse') {
+    generateReverseSteps();
+  }
+
+  if (operationSteps.length > 0) {
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('prevBtn').disabled = true;
+    updateCode();
+  }
+}
+
+// Generate steps for Insert at Head
+function generateInsertHeadSteps(value) {
+  const listBefore = list.toArray();
+  
+  operationSteps = [
+    {
+      description: `Creating a new node with value ${value}`,
+      explanation: `We create a new node in memory. It has two parts: data (${value}) and next (currently NULL). It's not connected to the list yet.`,
+      highlightLine: { cpp: 6, python: 6, pseudo: 3 },
+      checkpoint: null
+    },
+    {
+      description: `New node's next points to current HEAD`,
+      explanation: `We make the new node's "next" arrow point to the current first node of the list. This connects it to the existing list.`,
+      highlightLine: { cpp: 8, python: 7, pseudo: 6 },
+      checkpoint: null
+    },
+    {
+      description: `HEAD now points to the new node`,
+      explanation: `We update HEAD to point to our new node. Now the new node is the first node in the list!`,
+      highlightLine: { cpp: 9, python: 8, pseudo: 9 },
+      checkpoint: `Can you predict: If we insert another value, where will it go? (Hint: It will become the NEW head!)`
+    }
+  ];
+
+  // Actually perform the operation after steps are defined
+  list.insertAtHead(value);
+}
+
+function generateInsertTailSteps(value) {
+  operationSteps = [
+    {
+      description: `Creating a new node with value ${value}`,
+      explanation: `We create a new node. It will be added at the end of the list.`,
+      highlightLine: { cpp: 1, python: 1, pseudo: 3 },
+      checkpoint: null
+    },
+    {
+      description: `Traversing to find the last node`,
+      explanation: `We walk through the list one node at a time, following the "next" arrows, until we find a node whose next is NULL.`,
+      highlightLine: { cpp: 11, python: 7, pseudo: 11 },
+      checkpoint: null
+    },
+    {
+      description: `Last node's next now points to new node`,
+      explanation: `We change the last node's "next" from NULL to point to our new node. The new node is now at the end!`,
+      highlightLine: { cpp: 14, python: 10, pseudo: 14 },
+      checkpoint: `Notice: We changed a LINK (arrow), not a value. This is key to understanding linked lists!`
+    }
+  ];
+
+  list.insertAtTail(value);
+}
+
+function generateDeleteHeadSteps() {
+  const deletedValue = list.head.data;
+  
+  operationSteps = [
+    {
+      description: `Moving HEAD to the next node`,
+      explanation: `We move the HEAD pointer forward to point to the second node. The old first node is no longer accessible.`,
+      highlightLine: { cpp: 4, python: 4, pseudo: 7 },
+      checkpoint: `The old head node is removed from the list. In languages like C++, we'd also free its memory.`
+    }
+  ];
+
+  list.deleteAtHead();
+}
+
+function generateReverseSteps() {
+  operationSteps = [
+    {
+      description: `Setting up three pointers: prev, current, next`,
+      explanation: `We need three pointers to reverse the links. "prev" tracks the previous node, "current" is the node we're working on, and "next" saves the rest of the list.`,
+      highlightLine: { cpp: 1, python: 1, pseudo: 3 },
+      checkpoint: null
+    },
+    {
+      description: `Reversing the first link`,
+      explanation: `We flip the arrow: current's "next" now points BACKWARD to prev instead of forward. This reverses one connection.`,
+      highlightLine: { cpp: 7, python: 6, pseudo: 7 },
+      checkpoint: `We're reversing LINKS (arrows), not swapping values. Each arrow gets flipped one at a time.`
+    },
+    {
+      description: `Moving all pointers forward`,
+      explanation: `We advance all three pointers: prev becomes current, current becomes next. Then we repeat the process for the next node.`,
+      highlightLine: { cpp: 8, python: 7, pseudo: 8 },
+      checkpoint: null
+    },
+    {
+      description: `Updating HEAD to point to new first node`,
+      explanation: `After all links are reversed, HEAD needs to point to what was the last node (now the first node).`,
+      highlightLine: { cpp: 11, python: 10, pseudo: 13 },
+      checkpoint: `The list is now completely reversed! Notice we NEVER moved data values, only changed arrows.`
+    }
+  ];
+
+  list.reverse();
+}
+
+// Step navigation
+function nextStep() {
+  if (currentStepIndex < operationSteps.length - 1) {
+    currentStepIndex++;
+    applyStep();
+    
+    document.getElementById('prevBtn').disabled = false;
+    if (currentStepIndex === operationSteps.length - 1) {
+      document.getElementById('nextBtn').disabled = true;
+      renderList(); // Final render
+    }
+  }
+}
+
+function previousStep() {
+  if (currentStepIndex > 0) {
+    currentStepIndex--;
+    applyStep();
+    
+    document.getElementById('nextBtn').disabled = false;
+    if (currentStepIndex === 0) {
+      document.getElementById('prevBtn').disabled = true;
+    }
+  }
+}
+
+function applyStep() {
+  const step = operationSteps[currentStepIndex];
+  
+  document.getElementById('stepInfo').textContent = step.description;
+  document.getElementById('explanationText').textContent = step.explanation;
+  
+  // Update code highlight
+  updateCode(step.highlightLine);
+  
+  // Show/hide checkpoint
+  const checkpoint = document.getElementById('checkpoint');
+  const checkpointText = document.getElementById('checkpointText');
+  if (step.checkpoint) {
+    checkpoint.style.display = 'block';
+    checkpointText.textContent = step.checkpoint;
+  } else {
+    checkpoint.style.display = 'none';
+  }
+}
+
+function resetOperation() {
+  currentOperation = null;
+  operationSteps = [];
+  currentStepIndex = -1;
+  
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('prevBtn').disabled = true;
+  document.getElementById('stepInfo').textContent = 'Operation reset. Click another operation to continue learning!';
+  document.getElementById('explanationText').textContent = 'Choose an operation from the left panel to start learning how linked lists work!';
+  document.getElementById('checkpoint').style.display = 'none';
+  
+  updateCode();
+  renderList();
+}
+
+// Update code display
+function updateCode(highlightLines = null) {
+  const lang = document.getElementById('langSelect').value;
+  const codeContent = document.getElementById('codeContent');
+  
+  let template = null;
+  if (currentOperation && CODE_TEMPLATES[currentOperation]) {
+    template = CODE_TEMPLATES[currentOperation][lang];
+  }
+  
+  if (!template) {
+    codeContent.innerHTML = '<div class="code-line"><span class="comment">// Select an operation to see code</span></div>';
+    return;
+  }
+  
+  const lineToHighlight = highlightLines ? highlightLines[lang] : null;
+  
+  codeContent.innerHTML = template.map((line, idx) => {
+    const shouldHighlight = lineToHighlight === idx;
+    return `<div class="code-line ${shouldHighlight ? 'highlight' : ''}">${line}</div>`;
+  }).join('');
+}
+
+// Initial render
+renderList();
+
+</script>
+
+</body>
+</html>
