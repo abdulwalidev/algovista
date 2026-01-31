@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Selection Sort Mobile</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #0a0a0a;
+  color: #fff;
+  min-height: 100vh;
+  padding: 12px;
+  padding-bottom: 90px;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+
+.header p {
+  font-size: 12px;
+  opacity: 0.95;
+  line-height: 1.3;
+}
+
+/* STATUS INFO */
+.status-info {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.4;
+}
+
+.status-info .pass-info {
+  font-weight: 600;
+  font-size: 14px;
+  color: #4facfe;
+}
+
+.status-info .action-info {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.status-info.active {
+  animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* VISUALIZATION */
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  align-items: flex-end;
+  min-height: 220px;
+  margin-bottom: 10px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 34px;
+}
+
+.arrow {
+  position: absolute;
+  top: -28px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ff6b6b;
+  visibility: hidden;
+  animation: bounce 0.5s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.index {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.bar {
+  width: 100%;
+  height: var(--height);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 6px;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  will-change: transform;
+  transition: all 0.3s;
+}
+
+.bar.comparing {
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a6f 100%);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+}
+
+.bar.sorted {
+  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 0 15px rgba(79, 172, 254, 0.5);
+}
+
+.bar.minimum {
+  background: linear-gradient(180deg, #ffd89b 0%, #19547b 100%);
+  box-shadow: 0 0 20px rgba(255, 217, 155, 0.6);
+}
+
+/* Iteration glow colors */
+.bar.iter-0 { box-shadow: 0 0 20px rgba(255, 107, 107, 0.6); }
+.bar.iter-1 { box-shadow: 0 0 20px rgba(255, 159, 64, 0.6); }
+.bar.iter-2 { box-shadow: 0 0 20px rgba(255, 206, 86, 0.6); }
+.bar.iter-3 { box-shadow: 0 0 20px rgba(75, 192, 192, 0.6); }
+.bar.iter-4 { box-shadow: 0 0 20px rgba(153, 102, 255, 0.6); }
+.bar.iter-5 { box-shadow: 0 0 20px rgba(255, 99, 132, 0.6); }
+.bar.iter-6 { box-shadow: 0 0 20px rgba(54, 162, 235, 0.6); }
+.bar.iter-7 { box-shadow: 0 0 20px rgba(255, 159, 243, 0.6); }
+
+/* BUTTONS - Fixed to bottom */
+.buttons {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+}
+
+.reset-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  padding: 18px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  font-weight: 600;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#prevStep {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-right: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+#nextStep {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: none;
+  border-left: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+/* CODE DROPDOWN */
+.code-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.code-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron {
+  transition: transform 0.3s;
+  font-size: 18px;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.lang-dropdown {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.code-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.code-content.open {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.code {
+  background: #1a1a1a;
+  color: #dcdcdc;
+  padding: 14px;
+  border-radius: 10px;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.code div {
+  padding: 2px 0;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.highlight {
+  background: rgba(255, 215, 0, 0.15);
+  border-left: 2px solid #ffd700;
+  color: #fff;
+  padding-left: 8px;
+  margin-left: -8px;
+}
+
+/* SORTED DIVIDER */
+.sorted-divider {
+  position: absolute;
+  bottom: 20px;
+  width: 2px;
+  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+  transition: left 0.3s ease;
+}
+
+.sorted-divider::before {
+  content: 'sorted';
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  color: #000;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(79, 172, 254, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🔍 Selection Sort</h1>
+  <p>Find min • Swap with first unsorted • Mark sorted • Repeat</p>
+  <button class="reset-btn" id="newArray">🔄</button>
+</div>
+
+<div class="status-info" id="statusInfo">
+  <div class="pass-info">Tap "Next" to begin</div>
+  <div class="action-info">Ready to start sorting</div>
+</div>
+
+<div class="container" id="container"></div>
+
+<div class="code-section">
+  <div class="code-header" id="codeToggle">
+    <h3>
+      <span>💻</span>
+      <span>Code</span>
+    </h3>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <select class="lang-dropdown" id="langSelect" onclick="event.stopPropagation()">
+        <option value="cpp">C++</option>
+        <option value="python">Python</option>
+        <option value="pseudo">Pseudo</option>
+      </select>
+      <span class="chevron">▼</span>
+    </div>
+  </div>
+  <div class="code-content" id="codeContent">
+    <div class="code" id="codeBlock"></div>
+  </div>
+</div>
+
+<div class="buttons">
+  <button id="prevStep">← Prev</button>
+  <button id="nextStep">Next →</button>
+</div>
+
+<script>
+// CODE TEMPLATES FOR SELECTION SORT
+const CODE_TEMPLATES = {
+  cpp: [
+    '#include <iostream>',
+    'using namespace std;',
+    '',
+    'int main() {',
+    '    int arr[] = {5, 3, 8, 4, 2};',
+    '    int n = 5;',
+    '',
+    '    for (int i = 0; i < n - 1; i++) {',
+    '        int minIdx = i;',
+    '        for (int j = i + 1; j < n; j++) {',
+    '            if (arr[j] < arr[minIdx]) {',
+    '                minIdx = j;',
+    '            }',
+    '        }',
+    '        swap(arr[i], arr[minIdx]);',
+    '    }',
+    '    return 0;',
+    '}'
+  ],
+  python: [
+    'def selection_sort(arr):',
+    '    n = len(arr)',
+    '    for i in range(n - 1):',
+    '        min_idx = i',
+    '        for j in range(i + 1, n):',
+    '            if arr[j] < arr[min_idx]:',
+    '                min_idx = j',
+    '        arr[i], arr[min_idx] = arr[min_idx], arr[i]',
+    '',
+    '',
+    'arr = [5, 3, 8, 4, 2]',
+    'selection_sort(arr)'
+  ],
+  pseudo: [
+    'ALGORITHM SelectionSort(arr):',
+    '    n ← length of arr',
+    '',
+    '    FOR i FROM 0 TO n-2 DO:',
+    '        minIdx ← i',
+    '        FOR j FROM i+1 TO n-1 DO:',
+    '            IF arr[j] < arr[minIdx] THEN:',
+    '                minIdx ← j',
+    '            END IF',
+    '        END FOR',
+    '        SWAP arr[i] with arr[minIdx]',
+    '    END FOR',
+    '',
+    'END ALGORITHM'
+  ]
+};
+
+// LINE NUMBERS TO HIGHLIGHT FOR EACH LANGUAGE
+const HIGHLIGHT_LINES = {
+  cpp: { outer: 7, minInit: 8, inner: 9, compare: 10, swap: 14 },
+  python: { outer: 2, minInit: 3, inner: 4, compare: 5, swap: 7 },
+  pseudo: { outer: 3, minInit: 4, inner: 5, compare: 6, swap: 10 }
+};
+
+// STATE VARIABLES
+let currentLanguage = 'cpp';
+let arr = [];
+let history = [];
+
+// Selection Sort State
+let state = {
+  i: 0,           // Current position being filled with minimum
+  j: 0,           // Current position being scanned
+  minIdx: 0,      // Index of minimum element found so far
+  phase: 'init',  // Phases: 'init', 'scanning', 'swap', 'complete'
+  sorted: false
+};
+
+// DOM ELEMENTS
+const container = document.getElementById('container');
+const statusInfo = document.getElementById('statusInfo');
+const nextBtn = document.getElementById('nextStep');
+const prevBtn = document.getElementById('prevStep');
+const newBtn = document.getElementById('newArray');
+const codeBlock = document.getElementById('codeBlock');
+const langSelect = document.getElementById('langSelect');
+const codeToggle = document.getElementById('codeToggle');
+const codeContent = document.getElementById('codeContent');
+
+// Code dropdown toggle
+codeToggle.addEventListener('click', () => {
+  codeContent.classList.toggle('open');
+  document.querySelector('.chevron').classList.toggle('open');
+});
+
+// Language selector
+langSelect.addEventListener('change', (e) => {
+  currentLanguage = e.target.value;
+  renderCode();
+});
+
+// GENERATE UNIQUE RANDOM ARRAY
+function randomArray() {
+  const numbers = [];
+  const usedNumbers = new Set();
+  
+  while (numbers.length < 8) {
+    const num = 1 + Math.floor(Math.random() * 20);
+    if (!usedNumbers.has(num)) {
+      usedNumbers.add(num);
+      numbers.push(num);
+    }
+  }
+  
+  return numbers;
+}
+
+// RENDER ARRAY VISUALIZATION
+function renderArray() {
+  container.innerHTML = '';
+  
+  arr.forEach((value, index) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.dataset.index = index;
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '↓';
+
+    const idx = document.createElement('div');
+    idx.className = 'index';
+    idx.textContent = index;
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.textContent = value;
+    bar.style.setProperty('--height', value * 8 + 'px');
+
+    // Apply styles based on state
+    if (state.sorted) {
+      // All sorted
+      bar.classList.add('sorted');
+    } else {
+      // Add iteration glow
+      if (state.i < arr.length) {
+        bar.classList.add(`iter-${state.i}`);
+      }
+
+      // Mark sorted elements (0 to i-1)
+      if (index < state.i) {
+        bar.classList.add('sorted');
+      }
+      // Mark current minimum
+      else if (index === state.minIdx && state.phase === 'scanning') {
+        bar.classList.add('minimum');
+        arrow.style.visibility = 'visible';
+      }
+      // Mark current element being scanned
+      else if (index === state.j && state.phase === 'scanning') {
+        bar.classList.add('comparing');
+        arrow.style.visibility = 'visible';
+      }
+      // Mark elements being swapped
+      else if (state.phase === 'swap' && (index === state.i || index === state.minIdx)) {
+        bar.classList.add('comparing');
+        arrow.style.visibility = 'visible';
+      }
+    }
+
+    item.append(arrow, idx, bar);
+    container.appendChild(item);
+  });
+  
+  // Add sorted divider - calculate position mathematically
+  if (!state.sorted && state.i > 0 && state.i < arr.length) {
+    const sortedStartIndex = state.i;
+    if (sortedStartIndex > 0 && sortedStartIndex < arr.length) {
+      const divider = document.createElement('div');
+      divider.className = 'sorted-divider';
+      
+      // Calculate position from known dimensions (no DOM reads needed)
+      // Container has: justify-content: center, so items are centered
+      // Each item: 34px width, 8px gap
+      const itemWidth = 34;
+      const gapWidth = 8;
+      const totalWidth = (arr.length * itemWidth) + ((arr.length - 1) * gapWidth);
+      const containerWidth = container.offsetWidth;
+      const startOffset = (containerWidth - totalWidth) / 2;
+      
+      // Position divider exactly between sortedStartIndex-1 and sortedStartIndex
+      // Subtract 1px to center the 2px wide divider
+      const dividerLeft = startOffset + (sortedStartIndex * (itemWidth + gapWidth)) - (gapWidth / 2) - 1;
+      
+      // Set height to match shortest bar (min value * 8px) so it doesn't go lower than boxes
+      const minValue = Math.min(...arr);
+      const dividerHeight = minValue * 8;
+      
+      divider.style.left = dividerLeft + 'px';
+      divider.style.height = dividerHeight + 'px';
+      container.appendChild(divider);
+    }
+  }
+}
+
+// RENDER CODE WITH HIGHLIGHTING
+function renderCode(highlightLine = null) {
+  const lines = CODE_TEMPLATES[currentLanguage];
+  codeBlock.innerHTML = lines.map((line, idx) => {
+    const isHighlight = highlightLine === idx;
+    return `<div class="${isHighlight ? 'highlight' : ''}">${line || '&nbsp;'}</div>`;
+  }).join('');
+}
+
+// UPDATE STATUS INFO
+function updateStatusInfo(passInfo, actionInfo) {
+  statusInfo.innerHTML = `
+    <div class="pass-info">${passInfo}</div>
+    <div class="action-info">${actionInfo}</div>
+  `;
+  statusInfo.classList.add('active');
+  setTimeout(() => statusInfo.classList.remove('active'), 500);
+}
+
+// FLIP SWAP ANIMATION
+function flipSwap(indexA, indexB, callback) {
+  const items = [...container.children].filter(child => child.classList.contains('item'));
+  const itemA = items[indexA];
+  const itemB = items[indexB];
+  
+  if (!itemA || !itemB) {
+    if (callback) callback();
+    return;
+  }
+
+  const rectA = itemA.getBoundingClientRect();
+  const rectB = itemB.getBoundingClientRect();
+
+  // Swap in DOM
+  if (indexA < indexB) {
+    container.insertBefore(itemB, itemA);
+  } else {
+    container.insertBefore(itemA, itemB);
+  }
+
+  const rectA2 = itemA.getBoundingClientRect();
+  const rectB2 = itemB.getBoundingClientRect();
+
+  const dxA = rectA.left - rectA2.left;
+  const dxB = rectB.left - rectB2.left;
+
+  itemA.style.transform = `translateX(${dxA}px)`;
+  itemB.style.transform = `translateX(${dxB}px)`;
+
+  requestAnimationFrame(() => {
+    itemA.style.transition = 'transform 0.5s ease';
+    itemB.style.transition = 'transform 0.5s ease';
+    itemA.style.transform = '';
+    itemB.style.transform = '';
+  });
+
+  setTimeout(() => {
+    itemA.style.transition = '';
+    itemB.style.transition = '';
+    if (callback) callback();
+  }, 500);
+}
+
+// SAVE STATE TO HISTORY
+function saveState() {
+  history.push({
+    arr: [...arr],
+    state: { ...state },
+    statusInfoHTML: statusInfo.innerHTML
+  });
+}
+
+// RESET TO INITIAL STATE
+function reset() {
+  arr = randomArray();
+  state = {
+    i: 0,
+    j: 0,
+    minIdx: 0,
+    phase: 'init',
+    sorted: false
+  };
+  history = [];
+  
+  nextBtn.disabled = false;
+  prevBtn.disabled = true;
+  
+  statusInfo.innerHTML = `
+    <div class="pass-info">Tap "Next" to begin</div>
+    <div class="action-info">Ready to start sorting</div>
+  `;
+  
+  renderArray();
+  renderCode();
+}
+
+// NEXT STEP BUTTON
+nextBtn.addEventListener('click', () => {
+  if (state.sorted) return;
+  
+  const lines = HIGHLIGHT_LINES[currentLanguage];
+  
+  // Save current state before making changes
+  saveState();
+  
+  // Check if sorting is complete
+  if (state.i >= arr.length - 1) {
+    state.sorted = true;
+    nextBtn.disabled = true;
+    updateStatusInfo('✅ Sorting Complete!', 'All elements are in correct positions');
+    renderArray();
+    renderCode();
+    prevBtn.disabled = false;
+    return;
+  }
+  
+  // STATE MACHINE FOR SELECTION SORT
+  if (state.phase === 'init') {
+    // Initialize minIdx to current i
+    state.minIdx = state.i;
+    state.j = state.i + 1;
+    state.phase = 'scanning';
+    
+    updateStatusInfo(`Pass ${state.i + 1} • Initializing`, `Assume min at position ${state.i} (value ${arr[state.i]})`);
+    renderCode(lines.minInit);
+    renderArray();
+    prevBtn.disabled = false;
+  }
+  else if (state.phase === 'scanning') {
+    // Scanning for minimum
+    if (state.j < arr.length) {
+      renderCode(lines.compare);
+      
+      const currentVal = arr[state.j];
+      const minVal = arr[state.minIdx];
+      
+      if (currentVal < minVal) {
+        state.minIdx = state.j;
+        updateStatusInfo(`Pass ${state.i + 1} • Scanning pos ${state.j}`, `Found smaller: ${currentVal} → new min`);
+      } else {
+        updateStatusInfo(`Pass ${state.i + 1} • Scanning pos ${state.j}`, `${currentVal} ≥ ${minVal} → keep current min`);
+      }
+      
+      renderArray();
+      state.j++;
+      prevBtn.disabled = false;
+    } else {
+      // Finished scanning, prepare for swap
+      state.phase = 'swap';
+      renderCode(lines.swap);
+      
+      if (state.i === state.minIdx) {
+        updateStatusInfo(`Pass ${state.i + 1} • Swapping`, `Min ${arr[state.minIdx]} already at pos ${state.i}`);
+      } else {
+        updateStatusInfo(`Pass ${state.i + 1} • Swapping`, `Swap min ${arr[state.minIdx]} (pos ${state.minIdx}) ↔ pos ${state.i}`);
+      }
+      
+      renderArray();
+      prevBtn.disabled = false;
+    }
+  }
+  else if (state.phase === 'swap') {
+    // Perform swap if needed
+    if (state.i !== state.minIdx) {
+      const temp = arr[state.i];
+      arr[state.i] = arr[state.minIdx];
+      arr[state.minIdx] = temp;
+      
+      nextBtn.disabled = true;
+      prevBtn.disabled = true;
+      
+      flipSwap(state.i, state.minIdx, () => {
+        // Move to next pass
+        state.i++;
+        state.j = state.i + 1;
+        state.minIdx = state.i;
+        state.phase = 'init';
+        
+        nextBtn.disabled = false;
+        prevBtn.disabled = false;
+        
+        renderArray();
+      });
+    } else {
+      // No swap needed, move to next pass
+      state.i++;
+      state.j = state.i + 1;
+      state.minIdx = state.i;
+      state.phase = 'init';
+      
+      renderArray();
+    }
+  }
+});
+
+// PREVIOUS STEP BUTTON
+prevBtn.addEventListener('click', () => {
+  if (history.length === 0) return;
+  
+  const prevState = history.pop();
+  
+  arr = prevState.arr;
+  state = prevState.state;
+  statusInfo.innerHTML = prevState.statusInfoHTML;
+  
+  nextBtn.disabled = false;
+  
+  if (history.length === 0) {
+    prevBtn.disabled = true;
+  }
+  
+  renderArray();
+  renderCode();
+});
+
+// NEW ARRAY BUTTON
+newBtn.addEventListener('click', reset);
+
+// INITIALIZE
+reset();
+</script>
+
+</body>
+</html>
