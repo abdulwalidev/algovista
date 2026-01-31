@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dijkstra's Algorithm - Visual Learning</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 320px 1fr 380px;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+/* LEFT PANEL - Graph Builder */
+.builder {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.builder h2 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.intro {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #555;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+}
+
+.intro b {
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.canvas-container {
+  flex: 1;
+  border: 3px solid #e0e0e0;
+  border-radius: 12px;
+  position: relative;
+  background: #fafafa;
+  cursor: crosshair;
+  min-height: 280px;
+}
+
+#graphCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 10px;
+}
+
+.builder-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.mode-btn {
+  padding: 10px 8px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mode-btn:hover {
+  background: #f5f5f5;
+  border-color: #667eea;
+}
+
+.mode-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.control-btn {
+  padding: 12px;
+  border: none;
+  background: #e74c3c;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.control-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.control-btn.sample {
+  background: #3498db;
+}
+
+.control-btn.sample:hover {
+  background: #2980b9;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* CENTER PANEL - Main Visualization */
+.center {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.thinking-label {
+  background: white;
+  color: #333;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.thinking-label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.viz-container {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 450px;
+  overflow: hidden;
+}
+
+#vizCanvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.legend {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255,255,255,0.98);
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  border: 2px solid #f0f0f0;
+}
+
+.legend-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 14px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid #333;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+button {
+  padding: 15px 36px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.3s;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+#nextStep {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+#prevStep {
+  background: #95a5a6;
+  color: white;
+}
+
+#startViz {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+}
+
+#resetViz {
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+  color: white;
+}
+
+/* RIGHT PANEL - Explanation */
+.explanation-panel {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.explanation-panel h2 {
+  font-size: 20px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.why-box {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-radius: 12px;
+  border-left: 5px solid #667eea;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.why-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #333;
+  font-weight: 500;
+}
+
+.key-insight {
+  padding: 18px;
+  background: #fff3cd;
+  border-radius: 10px;
+  border-left: 4px solid #ffc107;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #856404;
+}
+
+.key-insight-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.distance-table {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 13px;
+}
+
+.distance-table-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.distance-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: white;
+  border-radius: 6px;
+  font-family: 'Consolas', monospace;
+}
+
+.distance-row.finalized {
+  background: #d4edda;
+  border-left: 3px solid #28a745;
+}
+
+.distance-row.current {
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+}
+
+.node-label {
+  font-weight: 700;
+}
+
+.distance-value {
+  font-weight: 600;
+}
+
+.infinity {
+  color: #999;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  padding: 35px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  text-align: center;
+  max-width: 400px;
+}
+
+.modal-content h3 {
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 22px;
+}
+
+.modal-content input {
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 18px;
+  width: 180px;
+  text-align: center;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.modal-content input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.modal-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.modal-btn.confirm {
+  background: #27ae60;
+  color: white;
+}
+
+.modal-btn.confirm:hover {
+  background: #229954;
+}
+
+.modal-btn.cancel {
+  background: #e74c3c;
+  color: white;
+}
+
+.modal-btn.cancel:hover {
+  background: #c0392b;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+  50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+}
+
+.pulsing {
+  animation: pulse 1s infinite;
+}
+
+.glowing {
+  animation: glow 1.5s infinite;
+}
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL - Graph Builder -->
+<div class="builder">
+  <h2>🗺️ Build Your Graph</h2>
+  
+  <div class="intro">
+    <b>Goal: Find the shortest path</b>
+    • Click to add nodes<br>
+    • Connect nodes with edges<br>
+    • Set edge weights (distances)<br>
+    • Choose where to start
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="graphCanvas"></canvas>
+  </div>
+
+  <div class="builder-controls">
+    <div class="mode-buttons">
+      <button class="mode-btn active" data-mode="vertex">Add Node</button>
+      <button class="mode-btn" data-mode="edge">Add Edge</button>
+      <button class="mode-btn" data-mode="start">Set Start</button>
+    </div>
+    <button class="control-btn sample">Load Example</button>
+    <button class="control-btn">Clear All</button>
+  </div>
+</div>
+
+<!-- CENTER PANEL - Visualization -->
+<div class="center">
+  <div class="thinking-label" id="thinkingLabel">
+    Build a graph and click "Start" to begin learning
+  </div>
+
+  <div class="viz-container">
+    <canvas id="vizCanvas"></canvas>
+    <div class="legend">
+      <div class="legend-title">Understanding the Colors</div>
+      <div class="legend-item">
+        <div class="legend-circle" style="background: #bbb;"></div>
+        <span><b>Gray</b> - Not visited yet</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-circle" style="background: #ffd700;"></div>
+        <span><b>Yellow</b> - Exploring now</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-circle" style="background: #27ae60;"></div>
+        <span><b>Green</b> - Finalized (locked)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button id="prevStep" disabled>⬅ Previous</button>
+    <button id="nextStep" disabled>Next ➡</button>
+    <button id="startViz">▶ Start</button>
+    <button id="resetViz" style="display:none;">↺ Reset</button>
+  </div>
+</div>
+
+<!-- RIGHT PANEL - Explanation -->
+<div class="explanation-panel">
+  <h2>💡 Why This Happens</h2>
+  
+  <div class="why-box">
+    <div class="why-text" id="whyText">
+      Click "Start" to see how Dijkstra's algorithm thinks step by step
+    </div>
+  </div>
+
+  <div class="key-insight" id="keyInsight">
+    <div class="key-insight-title">🔑 Key Idea</div>
+    <div id="insightText">
+      Dijkstra always explores the closest unvisited node. This guarantees we find the shortest path.
+    </div>
+  </div>
+
+  <div class="distance-table">
+    <div class="distance-table-title">📊 Distances from Start</div>
+    <div id="distanceTableContent">
+      Build a graph to see distances here
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="weightModal">
+  <div class="modal-content">
+    <h3>Set Edge Weight</h3>
+    <input type="number" id="weightInput" min="1" max="99" value="1" placeholder="Distance">
+    <div class="modal-buttons">
+      <button class="modal-btn confirm" id="confirmWeight">✓ OK</button>
+      <button class="modal-btn cancel" id="cancelWeight">✗ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Graph Builder
+let nodes = [];
+let edges = [];
+let mode = 'vertex';
+let selectedNode = null;
+let startNode = null;
+let nextNodeId = 0;
+let pendingEdge = null;
+
+const builderCanvas = document.getElementById('graphCanvas');
+const builderCtx = builderCanvas.getContext('2d');
+
+// Visualization
+const vizCanvas = document.getElementById('vizCanvas');
+const vizCtx = vizCanvas.getContext('2d');
+
+let isVisualizing = false;
+let distances = {};
+let previous = {};
+let visited = new Set();
+let currentNode = null;
+let exploringEdges = [];
+let stepHistory = [];
+let stepIndex = 0;
+let allSteps = [];
+
+// UI Elements
+const thinkingLabel = document.getElementById('thinkingLabel');
+const whyText = document.getElementById('whyText');
+const insightText = document.getElementById('insightText');
+const distanceTableContent = document.getElementById('distanceTableContent');
+const nextBtn = document.getElementById('nextStep');
+const prevBtn = document.getElementById('prevStep');
+const startBtn = document.getElementById('startViz');
+const resetBtn = document.getElementById('resetViz');
+const weightModal = document.getElementById('weightModal');
+const weightInput = document.getElementById('weightInput');
+
+// Canvas setup
+function resizeCanvas(canvas) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+}
+
+resizeCanvas(builderCanvas);
+resizeCanvas(vizCanvas);
+
+window.addEventListener('resize', () => {
+  resizeCanvas(builderCanvas);
+  resizeCanvas(vizCanvas);
+  drawBuilder();
+  if (isVisualizing) drawVisualization();
+});
+
+// Mode selection
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    selectedNode = null;
+    pendingEdge = null;
+    drawBuilder();
+  });
+});
+
+// Clear graph
+document.querySelector('.control-btn:not(.sample)').addEventListener('click', () => {
+  if (confirm('Clear the entire graph?')) {
+    nodes = [];
+    edges = [];
+    startNode = null;
+    nextNodeId = 0;
+    selectedNode = null;
+    pendingEdge = null;
+    drawBuilder();
+  }
+});
+
+// Load sample
+document.querySelector('.control-btn.sample').addEventListener('click', () => {
+  nodes = [
+    { id: 0, x: 60, y: 60, label: 'A' },
+    { id: 1, x: 200, y: 60, label: 'B' },
+    { id: 2, x: 260, y: 180, label: 'C' },
+    { id: 3, x: 140, y: 240, label: 'D' },
+    { id: 4, x: 40, y: 180, label: 'E' }
+  ];
+  edges = [
+    { from: 0, to: 1, weight: 4 },
+    { from: 0, to: 4, weight: 2 },
+    { from: 1, to: 2, weight: 3 },
+    { from: 1, to: 3, weight: 5 },
+    { from: 2, to: 3, weight: 1 },
+    { from: 3, to: 4, weight: 3 },
+    { from: 4, to: 1, weight: 7 }
+  ];
+  startNode = 0;
+  nextNodeId = 5;
+  drawBuilder();
+});
+
+// Canvas interaction
+builderCanvas.addEventListener('click', (e) => {
+  const rect = builderCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (mode === 'vertex') {
+    const clicked = findNodeAt(x, y);
+    if (!clicked) {
+      const label = String.fromCharCode(65 + (nextNodeId % 26));
+      nodes.push({ id: nextNodeId++, x, y, label });
+      drawBuilder();
+    }
+  } else if (mode === 'edge') {
+    const clicked = findNodeAt(x, y);
+    if (clicked) {
+      if (!selectedNode) {
+        selectedNode = clicked;
+        drawBuilder();
+      } else if (selectedNode.id !== clicked.id) {
+        const existing = edges.find(e => 
+          (e.from === selectedNode.id && e.to === clicked.id) ||
+          (e.from === clicked.id && e.to === selectedNode.id)
+        );
+        if (!existing) {
+          pendingEdge = { from: selectedNode.id, to: clicked.id };
+          showWeightModal();
+        }
+        selectedNode = null;
+        drawBuilder();
+      }
+    }
+  } else if (mode === 'start') {
+    const clicked = findNodeAt(x, y);
+    if (clicked) {
+      startNode = clicked.id;
+      drawBuilder();
+    }
+  }
+});
+
+function findNodeAt(x, y) {
+  return nodes.find(n => {
+    const dx = n.x - x;
+    const dy = n.y - y;
+    return Math.sqrt(dx * dx + dy * dy) < 20;
+  });
+}
+
+// Weight modal
+function showWeightModal() {
+  weightInput.value = 1;
+  weightModal.classList.add('show');
+  weightInput.focus();
+  weightInput.select();
+}
+
+document.getElementById('confirmWeight').addEventListener('click', () => {
+  const weight = parseInt(weightInput.value) || 1;
+  if (pendingEdge) {
+    edges.push({ ...pendingEdge, weight });
+    pendingEdge = null;
+  }
+  weightModal.classList.remove('show');
+  drawBuilder();
+});
+
+document.getElementById('cancelWeight').addEventListener('click', () => {
+  pendingEdge = null;
+  weightModal.classList.remove('show');
+});
+
+weightInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('confirmWeight').click();
+  }
+});
+
+// Draw builder
+function drawBuilder() {
+  builderCtx.clearRect(0, 0, builderCanvas.width, builderCanvas.height);
+
+  // Draw edges
+  edges.forEach(edge => {
+    const from = nodes.find(n => n.id === edge.from);
+    const to = nodes.find(n => n.id === edge.to);
+    if (from && to) {
+      builderCtx.strokeStyle = '#999';
+      builderCtx.lineWidth = 3;
+      builderCtx.beginPath();
+      builderCtx.moveTo(from.x, from.y);
+      builderCtx.lineTo(to.x, to.y);
+      builderCtx.stroke();
+
+      // Weight
+      const mx = (from.x + to.x) / 2;
+      const my = (from.y + to.y) / 2;
+      builderCtx.fillStyle = 'white';
+      builderCtx.fillRect(mx - 18, my - 14, 36, 28);
+      builderCtx.strokeStyle = '#667eea';
+      builderCtx.lineWidth = 2;
+      builderCtx.strokeRect(mx - 18, my - 14, 36, 28);
+      builderCtx.fillStyle = '#333';
+      builderCtx.font = 'bold 16px Arial';
+      builderCtx.textAlign = 'center';
+      builderCtx.textBaseline = 'middle';
+      builderCtx.fillText(edge.weight, mx, my);
+    }
+  });
+
+  // Draw nodes
+  nodes.forEach(node => {
+    const isStart = node.id === startNode;
+    const isSelected = selectedNode && selectedNode.id === node.id;
+
+    builderCtx.fillStyle = isStart ? '#27ae60' : (isSelected ? '#3498db' : 'white');
+    builderCtx.strokeStyle = '#333';
+    builderCtx.lineWidth = 3;
+    builderCtx.beginPath();
+    builderCtx.arc(node.x, node.y, 22, 0, Math.PI * 2);
+    builderCtx.fill();
+    builderCtx.stroke();
+
+    if (isStart) {
+      builderCtx.fillStyle = 'white';
+      builderCtx.font = 'bold 20px Arial';
+      builderCtx.fillText('★', node.x, node.y + 1);
+    } else {
+      builderCtx.fillStyle = '#333';
+      builderCtx.font = 'bold 18px Arial';
+      builderCtx.textAlign = 'center';
+      builderCtx.textBaseline = 'middle';
+      builderCtx.fillText(node.label, node.x, node.y);
+    }
+  });
+}
+
+// Generate algorithm steps
+function generateSteps() {
+  allSteps = [];
+  distances = {};
+  previous = {};
+  visited = new Set();
+  
+  nodes.forEach(n => {
+    distances[n.id] = Infinity;
+    previous[n.id] = null;
+  });
+  distances[startNode] = 0;
+
+  // Step 0: Initialization
+  allSteps.push({
+    type: 'init',
+    current: null,
+    visited: new Set(),
+    distances: {...distances},
+    previous: {...previous},
+    exploringEdges: [],
+    thinking: 'Starting from the green node. Its distance is 0 because we are already here.',
+    why: 'We begin at our starting point. The distance to reach ourselves is zero.',
+    insight: 'All other nodes start at ∞ (infinity) because we haven\'t found any path to them yet.'
+  });
+
+  while (visited.size < nodes.length) {
+    // Find unvisited node with minimum distance
+    let minDist = Infinity;
+    let minNode = null;
+    
+    nodes.forEach(n => {
+      if (!visited.has(n.id) && distances[n.id] < minDist) {
+        minDist = distances[n.id];
+        minNode = n.id;
+      }
+    });
+
+    if (minNode === null || distances[minNode] === Infinity) break;
+
+    // Step: Select current node
+    allSteps.push({
+      type: 'select',
+      current: minNode,
+      visited: new Set(visited),
+      distances: {...distances},
+      previous: {...previous},
+      exploringEdges: [],
+      thinking: `Choosing ${nodes.find(n => n.id === minNode).label} because it has the smallest distance (${distances[minNode]}) among unvisited nodes.`,
+      why: 'This node is closest so far. No other path can reach it cheaper.',
+      insight: 'We always pick the unvisited node with the smallest known distance. This ensures we build the shortest path step by step.'
+    });
+
+    // Get neighbors
+    const neighbors = edges.filter(e => e.from === minNode || e.to === minNode);
+    
+    // Explore each neighbor
+    neighbors.forEach(edge => {
+      const neighborId = edge.from === minNode ? edge.to : edge.from;
+      if (visited.has(neighborId)) return;
+
+      const newDist = distances[minNode] + edge.weight;
+      const oldDist = distances[neighborId];
+
+      if (newDist < oldDist) {
+        // Update distance
+        const prevDist = {...distances};
+        distances[neighborId] = newDist;
+        previous[neighborId] = minNode;
+
+        allSteps.push({
+          type: 'explore',
+          current: minNode,
+          neighbor: neighborId,
+          edge: edge,
+          visited: new Set(visited),
+          distances: {...distances},
+          previous: {...previous},
+          exploringEdges: [edge],
+          oldDist: oldDist,
+          newDist: newDist,
+          thinking: `Going through ${nodes.find(n => n.id === minNode).label} to reach ${nodes.find(n => n.id === neighborId).label} costs ${newDist}. This is better than ${oldDist === Infinity ? '∞' : oldDist}!`,
+          why: `${distances[minNode]} + ${edge.weight} = ${newDist}. This path is shorter, so we update the distance.`,
+          insight: 'Distances can only decrease, never increase. Once we find a better path, we remember it.'
+        });
+      } else {
+        allSteps.push({
+          type: 'explore',
+          current: minNode,
+          neighbor: neighborId,
+          edge: edge,
+          visited: new Set(visited),
+          distances: {...distances},
+          previous: {...previous},
+          exploringEdges: [edge],
+          oldDist: oldDist,
+          newDist: newDist,
+          thinking: `Path through ${nodes.find(n => n.id === minNode).label} to ${nodes.find(n => n.id === neighborId).label} costs ${newDist}, but current distance is ${oldDist}. No improvement.`,
+          why: 'This route is longer than what we already know, so we ignore it.',
+          insight: 'We only update distances when we find a better (shorter) path.'
+        });
+      }
+    });
+
+    // Finalize node
+    visited.add(minNode);
+    allSteps.push({
+      type: 'finalize',
+      current: minNode,
+      visited: new Set(visited),
+      distances: {...distances},
+      previous: {...previous},
+      exploringEdges: [],
+      thinking: `Node ${nodes.find(n => n.id === minNode).label} is now locked. Distance = ${distances[minNode]} is final.`,
+      why: 'No shorter path exists to this node. We can prove it mathematically.',
+      insight: '🔒 Once a node turns green, its distance never changes. This is the magic of Dijkstra!'
+    });
+  }
+
+  allSteps.push({
+    type: 'complete',
+    current: null,
+    visited: visited,
+    distances: {...distances},
+    previous: {...previous},
+    exploringEdges: [],
+    thinking: '✅ Algorithm complete! All reachable nodes have been found.',
+    why: 'We explored every node we could reach from the start.',
+    insight: 'The shortest path to any node can be found by following the previous pointers backward.'
+  });
+}
+
+// Start visualization
+startBtn.addEventListener('click', () => {
+  if (nodes.length < 2) {
+    alert('Add at least 2 nodes');
+    return;
+  }
+  if (startNode === null) {
+    alert('Set a start node (green mode)');
+    return;
+  }
+
+  isVisualizing = true;
+  stepIndex = 0;
+  generateSteps();
+
+  startBtn.style.display = 'none';
+  resetBtn.style.display = 'inline-block';
+  nextBtn.disabled = false;
+  prevBtn.disabled = true;
+
+  applyStep(allSteps[0]);
+  drawVisualization();
+});
+
+// Reset
+resetBtn.addEventListener('click', () => {
+  isVisualizing = false;
+  stepIndex = 0;
+  allSteps = [];
+  
+  startBtn.style.display = 'inline-block';
+  resetBtn.style.display = 'none';
+  nextBtn.disabled = true;
+  prevBtn.disabled = true;
+
+  thinkingLabel.textContent = 'Build a graph and click "Start" to begin learning';
+  whyText.textContent = 'Click "Start" to see how Dijkstra\'s algorithm thinks step by step';
+  insightText.textContent = 'Dijkstra always explores the closest unvisited node. This guarantees we find the shortest path.';
+
+  vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+  updateDistanceTable({});
+});
+
+// Next step
+nextBtn.addEventListener('click', () => {
+  if (stepIndex < allSteps.length - 1) {
+    stepIndex++;
+    applyStep(allSteps[stepIndex]);
+    drawVisualization();
+    prevBtn.disabled = false;
+    if (stepIndex === allSteps.length - 1) {
+      nextBtn.disabled = true;
+    }
+  }
+});
+
+// Previous step
+prevBtn.addEventListener('click', () => {
+  if (stepIndex > 0) {
+    stepIndex--;
+    applyStep(allSteps[stepIndex]);
+    drawVisualization();
+    nextBtn.disabled = false;
+    if (stepIndex === 0) {
+      prevBtn.disabled = true;
+    }
+  }
+});
+
+function applyStep(step) {
+  currentNode = step.current;
+  visited = new Set(step.visited);
+  distances = {...step.distances};
+  previous = {...step.previous};
+  exploringEdges = step.exploringEdges || [];
+
+  thinkingLabel.textContent = step.thinking;
+  whyText.textContent = step.why;
+  insightText.textContent = step.insight;
+
+  updateDistanceTable(distances);
+}
+
+function updateDistanceTable(dists) {
+  if (nodes.length === 0) {
+    distanceTableContent.innerHTML = 'Build a graph to see distances here';
+    return;
+  }
+
+  let html = '';
+  nodes.forEach(node => {
+    const dist = dists[node.id];
+    const isCurrent = currentNode === node.id;
+    const isFinalized = visited.has(node.id);
+    const rowClass = isFinalized ? 'finalized' : (isCurrent ? 'current' : '');
+    
+    html += `
+      <div class="distance-row ${rowClass}">
+        <span class="node-label">${node.label}</span>
+        <span class="distance-value ${dist === Infinity ? 'infinity' : ''}">${dist === Infinity ? '∞' : dist}</span>
+      </div>
+    `;
+  });
+  distanceTableContent.innerHTML = html;
+}
+
+// Draw visualization
+function drawVisualization() {
+  vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+
+  const padding = 80;
+  const bounds = getGraphBounds();
+  const scaleX = (vizCanvas.width - 2 * padding) / (bounds.maxX - bounds.minX || 1);
+  const scaleY = (vizCanvas.height - 2 * padding) / (bounds.maxY - bounds.minY || 1);
+  const scale = Math.min(scaleX, scaleY, 2);
+
+  const offsetX = padding + (vizCanvas.width - 2 * padding - (bounds.maxX - bounds.minX) * scale) / 2;
+  const offsetY = padding + (vizCanvas.height - 2 * padding - (bounds.maxY - bounds.minY) * scale) / 2;
+
+  function transform(x, y) {
+    return {
+      x: (x - bounds.minX) * scale + offsetX,
+      y: (y - bounds.minY) * scale + offsetY
+    };
+  }
+
+  // Draw edges
+  edges.forEach(edge => {
+    const from = nodes.find(n => n.id === edge.from);
+    const to = nodes.find(n => n.id === edge.to);
+    const fromPos = transform(from.x, from.y);
+    const toPos = transform(to.x, to.y);
+
+    const isExploring = exploringEdges.some(e => 
+      (e.from === edge.from && e.to === edge.to) || 
+      (e.from === edge.to && e.to === edge.from)
+    );
+
+    vizCtx.strokeStyle = isExploring ? '#ffd700' : '#ccc';
+    vizCtx.lineWidth = isExploring ? 6 : 3;
+    vizCtx.beginPath();
+    vizCtx.moveTo(fromPos.x, fromPos.y);
+    vizCtx.lineTo(toPos.x, toPos.y);
+    vizCtx.stroke();
+
+    if (isExploring) {
+      vizCtx.shadowBlur = 20;
+      vizCtx.shadowColor = '#ffd700';
+      vizCtx.stroke();
+      vizCtx.shadowBlur = 0;
+    }
+
+    // Weight
+    const mx = (fromPos.x + toPos.x) / 2;
+    const my = (fromPos.y + toPos.y) / 2;
+    vizCtx.fillStyle = 'white';
+    vizCtx.fillRect(mx - 20, my - 16, 40, 32);
+    vizCtx.strokeStyle = isExploring ? '#ffd700' : '#999';
+    vizCtx.lineWidth = 2;
+    vizCtx.strokeRect(mx - 20, my - 16, 40, 32);
+    vizCtx.fillStyle = '#333';
+    vizCtx.font = 'bold 18px Arial';
+    vizCtx.textAlign = 'center';
+    vizCtx.textBaseline = 'middle';
+    vizCtx.fillText(edge.weight, mx, my);
+  });
+
+  // Draw nodes
+  nodes.forEach(node => {
+    const pos = transform(node.x, node.y);
+    const isStart = node.id === startNode;
+    const isCurrent = currentNode === node.id;
+    const isVisited = visited.has(node.id);
+    const dist = distances[node.id];
+
+    let color = '#bbb';
+    if (isVisited && !isCurrent) color = '#27ae60';
+    if (isCurrent) color = '#ffd700';
+
+    // Glow for current
+    if (isCurrent) {
+      vizCtx.shadowBlur = 30;
+      vizCtx.shadowColor = '#ffd700';
+    }
+
+    vizCtx.fillStyle = color;
+    vizCtx.strokeStyle = '#333';
+    vizCtx.lineWidth = 4;
+    vizCtx.beginPath();
+    vizCtx.arc(pos.x, pos.y, 32, 0, Math.PI * 2);
+    vizCtx.fill();
+    vizCtx.stroke();
+
+    vizCtx.shadowBlur = 0;
+
+    // Lock icon for finalized
+    if (isVisited && !isCurrent) {
+      vizCtx.fillStyle = 'white';
+      vizCtx.font = 'bold 24px Arial';
+      vizCtx.textAlign = 'center';
+      vizCtx.textBaseline = 'middle';
+      vizCtx.fillText('🔒', pos.x + 22, pos.y - 22);
+    }
+
+    // Label
+    vizCtx.fillStyle = isStart ? 'white' : '#333';
+    vizCtx.font = 'bold 20px Arial';
+    vizCtx.textAlign = 'center';
+    vizCtx.textBaseline = 'middle';
+    vizCtx.fillText(node.label, pos.x, pos.y);
+
+    // Distance below
+    const distText = dist === Infinity ? '∞' : dist.toString();
+    vizCtx.fillStyle = 'white';
+    vizCtx.fillRect(pos.x - 25, pos.y + 40, 50, 28);
+    vizCtx.strokeStyle = color;
+    vizCtx.lineWidth = 3;
+    vizCtx.strokeRect(pos.x - 25, pos.y + 40, 50, 28);
+    vizCtx.fillStyle = dist === Infinity ? '#999' : '#333';
+    vizCtx.font = 'bold 18px Arial';
+    vizCtx.fillText(distText, pos.x, pos.y + 54);
+  });
+}
+
+function getGraphBounds() {
+  if (nodes.length === 0) return { minX: 0, maxX: 1, minY: 0, maxY: 1 };
+  
+  const xs = nodes.map(n => n.x);
+  const ys = nodes.map(n => n.y);
+  return {
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys)
+  };
+}
+
+// Initialize
+drawBuilder();
+updateDistanceTable({});
+</script>
+
+</body>
+</html>
