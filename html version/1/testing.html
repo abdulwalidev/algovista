@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bubble Sort – Step by Step</title>
+
+<style>
+  body {
+    display: grid;
+    grid-template-columns: 280px 1fr 380px;
+    gap: 20px;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    background: #f5f5f5;
+    font-family: sans-serif;
+  }
+
+  /* LEFT */
+  .explain {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* CENTER */
+  .center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .whats {
+    background: #2c3e50;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    min-height: 24px;
+    text-align: center;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 30px;
+    border: 2px dashed #aaa;
+    align-items: flex-end;
+    min-height: 320px;
+    margin-bottom: 12px;
+    background: #fff;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 40px;
+  }
+
+  .index {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+
+  .bar {
+    width: 100%;
+    height: var(--height);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 6px;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .arrow {
+    position: absolute;
+    top: -28px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+    visibility: hidden;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    padding: 10px 18px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* RIGHT */
+  .code {
+    background: #1e1e1e;
+    color: #dcdcdc;
+    padding: 14px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 13px;
+    overflow-y: auto;
+  }
+
+  .code div {
+    padding: 2px 0;
+  }
+
+  .highlight {
+    background: #3a5a40;
+    color: #fff;
+    padding: 2px 4px;
+    margin: 0 -4px;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- LEFT -->
+<div class="explain">
+<b>Bubble Sort (Very Simple)</b><br><br>
+• Take two numbers<br>
+• Compare them<br>
+• If the left number is bigger, swap them<br>
+• Bigger values slowly move right<br>
+• When no swaps happen → sorted ✅
+</div>
+
+<!-- CENTER -->
+<div class="center">
+  <div class="whats" id="whatsHappening">
+    Click "Next Step" to start
+  </div>
+
+  <div class="container" id="container"></div>
+
+  <div class="buttons">
+    <button id="nextStep">Next Step</button>
+    <button id="newArray">New Array</button>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="code" id="codeBlock">
+<div id="line1">#include &lt;iostream&gt;</div>
+<div id="line2">using namespace std;</div>
+<div id="line3"></div>
+<div id="line4">int main() {</div>
+<div id="line5">    int arr[] = {5, 3, 8, 4, 2};</div>
+<div id="line6">    int n = 5;</div>
+<div id="line7"></div>
+<div id="line8">    for (int i = 0; i &lt; n - 1; i++) {</div>
+<div id="line9">        for (int j = 0; j &lt; n - i - 1; j++) {</div>
+<div id="line10">            if (arr[j] &gt; arr[j + 1]) {</div>
+<div id="line11">                swap(arr[j], arr[j + 1]);</div>
+<div id="line12">            }</div>
+<div id="line13">        }</div>
+<div id="line14">    }</div>
+<div id="line15">    return 0;</div>
+<div id="line16">}</div>
+</div>
+
+<script>
+const container = document.getElementById('container');
+const whats = document.getElementById('whatsHappening');
+const nextBtn = document.getElementById('nextStep');
+const newBtn = document.getElementById('newArray');
+
+let arr = [];
+let i = 0;
+let j = 0;
+let swappedInPass = false;
+
+function randomArray() {
+  return Array.from({ length: 8 }, () => 1 + Math.floor(Math.random() * 20));
+}
+
+function renderArray(array) {
+  container.innerHTML = '';
+  array.forEach((value, index) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '↓';
+
+    const idx = document.createElement('div');
+    idx.className = 'index';
+    idx.textContent = index;
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.textContent = value;
+    bar.style.setProperty('--height', value * 12 + 'px');
+    bar.style.backgroundColor = `hsl(${index * 35},70%,50%)`;
+
+    item.append(arrow, idx, bar);
+    container.appendChild(item);
+  });
+}
+
+function clearArrows() {
+  document.querySelectorAll('.arrow').forEach(a => a.style.visibility = 'hidden');
+}
+
+function clearHighlight() {
+  document.querySelectorAll('.code div').forEach(line => line.classList.remove('highlight'));
+}
+
+function highlightLine(lineNum) {
+  clearHighlight();
+  const line = document.getElementById('line' + lineNum);
+  if (line) line.classList.add('highlight');
+}
+
+function reset() {
+  arr = randomArray();
+  i = 0;
+  j = 0;
+  swappedInPass = false;
+  nextBtn.disabled = false;
+  whats.textContent = 'New array generated';
+  renderArray(arr);
+  clearHighlight();
+}
+
+nextBtn.addEventListener('click', () => {
+  if (j >= arr.length - i - 1) {
+    if (!swappedInPass && i > 0) {
+      whats.textContent = 'Sorted!';
+      nextBtn.disabled = true;
+      clearArrows();
+      clearHighlight();
+      return;
+    }
+    j = 0;
+    i++;
+    swappedInPass = false;
+    highlightLine(8); // outer for loop
+    return;
+  }
+
+  clearArrows();
+  highlightLine(9); // inner for loop
+
+  const items = container.children;
+  const itemA = items[j];
+  const itemB = items[j + 1];
+
+  itemA.querySelector('.arrow').style.visibility = 'visible';
+  itemB.querySelector('.arrow').style.visibility = 'visible';
+
+  highlightLine(10); // if condition
+  
+  if (arr[j] > arr[j + 1]) {
+    whats.textContent = `Compare ${arr[j]} and ${arr[j + 1]} → swap`;
+    highlightLine(11); // swap line
+    [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+    container.insertBefore(itemB, itemA);
+    swappedInPass = true;
+  } else {
+    whats.textContent = `Compare ${arr[j]} and ${arr[j + 1]} → no swap`;
+  }
+
+  j++;
+});
+
+newBtn.addEventListener('click', reset);
+
+reset();
+</script>
+
+</body>
+</html> 

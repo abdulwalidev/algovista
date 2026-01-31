@@ -1,0 +1,281 @@
+/* ================= GLOBAL RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    display: grid;
+    grid-template-columns: 300px 1fr 420px;
+    gap: 20px;
+    height: 100vh;
+    padding: 20px;
+    background: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* ================= LEFT PANEL ================= */
+  .explain {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.8;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  
+  .explain b {
+    font-size: 18px;
+    color: black;
+  }
+  
+  /* ================= CENTER PANEL ================= */
+  .center {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .iteration-label {
+    background: white;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+  }
+  
+  .iteration-label.active {
+    animation: pulse 0.5s;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 40px 30px;
+    background: white;
+    border-radius: 12px;
+    align-items: flex-end;
+    min-height: 350px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+  }
+  
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 50px;
+  }
+  
+  .arrow {
+    position: absolute;
+    top: -32px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #e74c3c;
+    visibility: hidden;
+    animation: bounce 0.5s infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  .index {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .bar {
+    width: 100%;
+    height: var(--height);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    will-change: transform;
+  }
+  
+  .bar.comparing {
+    background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+  }
+  
+  .bar.sorted {
+    background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  .bar.minimum {
+    background: linear-gradient(180deg, #ffd89b 0%, #19547b 100%);
+  }
+  
+  /* Iteration glow colors */
+  .bar.iter-0 { box-shadow: 0 0 20px rgba(255, 107, 107, 0.6); }
+  .bar.iter-1 { box-shadow: 0 0 20px rgba(255, 159, 64, 0.6); }
+  .bar.iter-2 { box-shadow: 0 0 20px rgba(255, 206, 86, 0.6); }
+  .bar.iter-3 { box-shadow: 0 0 20px rgba(75, 192, 192, 0.6); }
+  .bar.iter-4 { box-shadow: 0 0 20px rgba(153, 102, 255, 0.6); }
+  .bar.iter-5 { box-shadow: 0 0 20px rgba(255, 99, 132, 0.6); }
+  .bar.iter-6 { box-shadow: 0 0 20px rgba(54, 162, 235, 0.6); }
+  .bar.iter-7 { box-shadow: 0 0 20px rgba(255, 159, 243, 0.6); }
+  
+  .buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  
+  button {
+    padding: 14px 32px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  #nextStep, #newArray {
+    background: black;
+    color: white;
+  }
+  
+  #prevStep {
+    background: #555;
+    color: white;
+  }
+  
+  /* EXPLANATORY TEXT DIV */
+  .explanation-text {
+    background: white;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  /* SORTED DIVIDER */
+  .sorted-divider {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    width: 2.5px;
+    background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+    transition: opacity 0.2s ease;
+  }
+  
+  .sorted-divider::before {
+    content: 'sorted →';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    font-weight: 600;
+    color: #4facfe;
+    white-space: nowrap;
+  }
+  
+  /* ================= RIGHT PANEL - CODE ================= */
+  .code {
+    background: #1e1e1e;
+    color: #dcdcdc;
+    padding: 20px;
+    padding-top: 50px;
+    border-radius: 12px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  
+  .code div {
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: all 0.3s;
+  }
+  
+  .highlight {
+    background: rgba(255, 215, 0, 0.25);
+    border-left: 3px solid #ffd700;
+    color: #fff;
+    padding-left: 10px;
+  }
+  
+  .keyword { color: #569cd6; }
+  .function { color: #dcdcaa; }
+  .number { color: #b5cea8; }
+  .comment { color: #6a9955; }
+  
+  .language-selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+  }
+  
+  .lang-dropdown {
+    background: #2d2d2d;
+    color: #dcdcdc;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 120px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    outline: none;
+  }
+  
+  .lang-dropdown:hover {
+    background: #3d3d3d;
+  }
+  
+  .lang-dropdown option {
+    background: #2d2d2d;
+    color: #dcdcdc;
+  }

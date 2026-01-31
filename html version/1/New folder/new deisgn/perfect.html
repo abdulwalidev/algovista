@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bubble Sort – Step by Step</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    display: grid;
+    grid-template-columns: 300px 1fr 420px;
+    gap: 20px;
+    height: 100vh;
+    padding: 20px;
+    background: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* LEFT PANEL */
+  .explain {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.8;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  .explain b {
+    font-size: 18px;
+    color: black;
+  }
+
+  /* CENTER PANEL */
+  .center {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .language-selector {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+  }
+
+  .lang-dropdown {
+    background: #2d2d2d;
+    color: #dcdcdc;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 120px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    outline: none;
+  }
+
+  .lang-dropdown:hover {
+    background: #3d3d3d;
+  }
+
+  .lang-dropdown option {
+    background: #2d2d2d;
+    color: #dcdcdc;
+  }
+
+  .iteration-label {
+    background: white;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+  }
+
+  .iteration-label.active {
+    animation: pulse 0.5s;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 40px 30px;
+    background: white;
+    border-radius: 12px;
+    align-items: flex-end;
+    min-height: 350px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 50px;
+  }
+
+  .arrow {
+    position: absolute;
+    top: -32px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #e74c3c;
+    visibility: hidden;
+    animation: bounce 0.5s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .index {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .bar {
+    width: 100%;
+    height: var(--height);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    will-change: transform;
+  }
+
+  .bar.comparing {
+    background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  .bar.sorted {
+    background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  /* Iteration glow colors */
+  .bar.iter-0 { box-shadow: 0 0 20px rgba(255, 107, 107, 0.6); }
+  .bar.iter-1 { box-shadow: 0 0 20px rgba(255, 159, 64, 0.6); }
+  .bar.iter-2 { box-shadow: 0 0 20px rgba(255, 206, 86, 0.6); }
+  .bar.iter-3 { box-shadow: 0 0 20px rgba(75, 192, 192, 0.6); }
+  .bar.iter-4 { box-shadow: 0 0 20px rgba(153, 102, 255, 0.6); }
+  .bar.iter-5 { box-shadow: 0 0 20px rgba(255, 99, 132, 0.6); }
+  .bar.iter-6 { box-shadow: 0 0 20px rgba(54, 162, 235, 0.6); }
+  .bar.iter-7 { box-shadow: 0 0 20px rgba(255, 159, 243, 0.6); }
+
+  .buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  button {
+    padding: 14px 32px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #nextStep {
+    background: black;
+    color: white;
+  }
+
+  #newArray {
+    background: black;
+    color: white;
+  }
+
+  /* NEW EXPLANATORY TEXT DIV */
+  .explanation-text {
+    background: white;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  /* SORTED DIVIDER */
+  .sorted-divider {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    width: 3px;
+    background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+  }
+
+  .sorted-divider::before {
+    content: 'sorted →';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    font-weight: 600;
+    color: #4facfe;
+    white-space: nowrap;
+  }
+
+  /* RIGHT PANEL - CODE */
+  .code {
+    background: #1e1e1e;
+    color: #dcdcdc;
+    padding: 20px;
+    border-radius: 12px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+
+  .code div {
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: all 0.3s;
+  }
+
+  .highlight {
+    background: rgba(255, 215, 0, 0.25);
+    border-left: 3px solid #ffd700;
+    color: #fff;
+    padding-left: 10px;
+  }
+
+  .keyword { color: #569cd6; }
+  .function { color: #dcdcaa; }
+  .number { color: #b5cea8; }
+  .comment { color: #6a9955; }
+</style>
+</head>
+
+<body>
+
+<!-- LEFT PANEL -->
+<div class="explain">
+  <b>Bubble Sort (Very Simple)</b><br><br>
+  • Take two numbers<br>
+  • Compare them<br>
+  • If the left number is bigger, swap them<br>
+  • Bigger values slowly move right<br>
+  • When no swaps happen → sorted ✅
+</div>
+
+<!-- CENTER PANEL -->
+<div class="center">
+  <div class="iteration-label" id="iterLabel">
+    Click "Next Step" to start
+  </div>
+
+  <div class="container" id="container">
+    <div class="language-selector">
+      <select class="lang-dropdown" id="langSelect">
+        <option value="cpp">C++</option>
+        <option value="python">Python</option>
+        <option value="pseudo">Pseudocode</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button id="nextStep">Next Step</button>
+    <button id="newArray">New Array</button>
+  </div>
+
+  <!-- NEW EXPLANATORY TEXT DIV -->
+  <div class="explanation-text" id="explanationText">
+    Ready to begin sorting
+  </div>
+</div>
+
+<!-- RIGHT PANEL - CODE -->
+<div class="code" id="codeBlock"></div>
+
+<script>
+const CODE_TEMPLATES = {
+  cpp: [
+    '#include <iostream>',
+    'using namespace std;',
+    '',
+    'int main() {',
+    '    int arr[] = {5, 3, 8, 4, 2};',
+    '    int n = 5;',
+    '',
+    '    for (int i = 0; i < n - 1; i++) {',
+    '        for (int j = 0; j < n - i - 1; j++) {',
+    '            if (arr[j] > arr[j + 1]) {',
+    '                swap(arr[j], arr[j + 1]);',
+    '            }',
+    '        }',
+    '    }',
+    '    return 0;',
+    '}'
+  ],
+  python: [
+    'def bubble_sort(arr):',
+    '    n = len(arr)',
+    '    for i in range(n - 1):',
+    '        for j in range(n - i - 1):',
+    '            if arr[j] > arr[j + 1]:',
+    '                arr[j], arr[j + 1] = arr[j + 1], arr[j]',
+    '',
+    '',
+    'arr = [5, 3, 8, 4, 2]',
+    'bubble_sort(arr)'
+  ],
+  pseudo: [
+    'ALGORITHM BubbleSort(arr):',
+    '    n ← length of arr',
+    '',
+    '    FOR i FROM 0 TO n-2 DO:',
+    '        FOR j FROM 0 TO n-i-2 DO:',
+    '            IF arr[j] > arr[j+1] THEN:',
+    '                SWAP arr[j] with arr[j+1]',
+    '            END IF',
+    '        END FOR',
+    '    END FOR',
+    '',
+    'END ALGORITHM'
+  ]
+};
+
+const HIGHLIGHT_LINES = {
+  cpp: { outer: 7, inner: 8, compare: 9, swap: 10 },
+  python: { outer: 2, inner: 3, compare: 4, swap: 5 },
+  pseudo: { outer: 3, inner: 4, compare: 5, swap: 6 }
+};
+
+let currentLanguage = 'cpp';
+let arr = [];
+let i = 0;
+let j = 0;
+let swappedInPass = false;
+let sorted = false;
+let awaitingSwap = false;
+
+const container = document.getElementById('container');
+const iterLabel = document.getElementById('iterLabel');
+const nextBtn = document.getElementById('nextStep');
+const newBtn = document.getElementById('newArray');
+const codeBlock = document.getElementById('codeBlock');
+const langSelect = document.getElementById('langSelect');
+const explanationText = document.getElementById('explanationText');
+
+// Language selector
+langSelect.addEventListener('change', (e) => {
+  currentLanguage = e.target.value;
+  renderCode();
+});
+
+function randomArray() {
+  return Array.from({ length: 8 }, () => 1 + Math.floor(Math.random() * 20));
+}
+
+function renderArray() {
+  container.innerHTML = '';
+  
+  // Re-add language selector
+  const langSelector = document.createElement('div');
+  langSelector.className = 'language-selector';
+  const select = document.createElement('select');
+  select.className = 'lang-dropdown';
+  select.id = 'langSelect';
+  select.innerHTML = `
+    <option value="cpp" ${currentLanguage === 'cpp' ? 'selected' : ''}>C++</option>
+    <option value="python" ${currentLanguage === 'python' ? 'selected' : ''}>Python</option>
+    <option value="pseudo" ${currentLanguage === 'pseudo' ? 'selected' : ''}>Pseudocode</option>
+  `;
+  select.addEventListener('change', (e) => {
+    currentLanguage = e.target.value;
+    renderCode();
+  });
+  langSelector.appendChild(select);
+  container.appendChild(langSelector);
+  
+  arr.forEach((value, index) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '↓';
+
+    const idx = document.createElement('div');
+    idx.className = 'index';
+    idx.textContent = index;
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.textContent = value;
+    bar.style.setProperty('--height', value * 12 + 'px');
+
+    // If fully sorted, make all bars blue
+    if (sorted) {
+      bar.classList.add('sorted');
+    } else {
+      // Add iteration color glow
+      if (i < arr.length - 1) {
+        bar.classList.add(`iter-${i}`);
+      }
+
+      // Mark sorted elements
+      if (index >= arr.length - i - 1) {
+        bar.classList.add('sorted');
+      }
+
+      // Mark comparing elements
+      if (index === j || index === j + 1) {
+        bar.classList.add('comparing');
+        arrow.style.visibility = 'visible';
+      }
+    }
+
+    item.append(arrow, idx, bar);
+    container.appendChild(item);
+  });
+  
+  // Add sorted divider if there are sorted elements
+  if (!sorted && i > 0 && arr.length - i - 1 < arr.length) {
+    const items = [...container.children].filter(child => child.classList.contains('item'));
+    const sortedStartIndex = arr.length - i - 1;
+    if (sortedStartIndex < items.length && sortedStartIndex > 0) {
+      const divider = document.createElement('div');
+      divider.className = 'sorted-divider';
+      
+      // Position it between unsorted and sorted parts
+      const leftItem = items[sortedStartIndex - 1];
+      const rightItem = items[sortedStartIndex];
+      
+      setTimeout(() => {
+        const leftRect = leftItem.getBoundingClientRect();
+        const rightRect = rightItem.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        const dividerLeft = ((leftRect.right + rightRect.left) / 2) - containerRect.left;
+        divider.style.left = dividerLeft + 'px';
+      }, 0);
+      
+      container.appendChild(divider);
+    }
+  }
+}
+
+function renderCode(highlightLine = null) {
+  const lines = CODE_TEMPLATES[currentLanguage];
+  codeBlock.innerHTML = lines.map((line, idx) => {
+    const isHighlight = highlightLine === idx;
+    return `<div class="${isHighlight ? 'highlight' : ''}">${line || '&nbsp;'}</div>`;
+  }).join('');
+}
+
+function updateIterationLabel() {
+  if (sorted) {
+    iterLabel.textContent = '✅ Array is sorted!';
+    iterLabel.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    iterLabel.style.color = 'white';
+  } else {
+    iterLabel.textContent = `🔄 Pass ${i + 1} - Comparing positions ${j} and ${j + 1}`;
+    iterLabel.style.background = getIterationColor(i);
+    iterLabel.style.color = 'white';
+    iterLabel.classList.add('active');
+    setTimeout(() => iterLabel.classList.remove('active'), 500);
+  }
+}
+
+function getIterationColor(iterNum) {
+  const colors = [
+    'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+    'linear-gradient(135deg, #ff9f40 0%, #ff6b6b 100%)',
+    'linear-gradient(135deg, #ffce56 0%, #ff9f40 100%)',
+    'linear-gradient(135deg, #4bc0c0 0%, #36a2a2 100%)',
+    'linear-gradient(135deg, #9966ff 0%, #7b4fff 100%)',
+    'linear-gradient(135deg, #ff6384 0%, #ff4f7c 100%)',
+    'linear-gradient(135deg, #36a2eb 0%, #258dcf 100%)',
+    'linear-gradient(135deg, #ff9fef 0%, #e67be0 100%)'
+  ];
+  return colors[iterNum % colors.length];
+}
+
+// FLIP swap animation
+function flipSwap(itemA, itemB, callback) {
+  const rectA = itemA.getBoundingClientRect();
+  const rectB = itemB.getBoundingClientRect();
+
+  container.insertBefore(itemB, itemA);
+
+  const rectA2 = itemA.getBoundingClientRect();
+  const rectB2 = itemB.getBoundingClientRect();
+
+  const dxA = rectA.left - rectA2.left;
+  const dxB = rectB.left - rectB2.left;
+
+  itemA.style.transform = `translateX(${dxA}px)`;
+  itemB.style.transform = `translateX(${dxB}px)`;
+
+  requestAnimationFrame(() => {
+    itemA.style.transition = 'transform 0.6s ease';
+    itemB.style.transition = 'transform 0.6s ease';
+    itemA.style.transform = '';
+    itemB.style.transform = '';
+  });
+
+  setTimeout(() => {
+    itemA.style.transition = '';
+    itemB.style.transition = '';
+    // Update indices after swap
+    [...container.children].forEach((item, i) => {
+      const indexDiv = item.querySelector('.index');
+      if (indexDiv) {
+        indexDiv.textContent = i;
+      }
+    });
+    if (callback) callback();
+  }, 600);
+}
+
+function reset() {
+  arr = randomArray();
+  i = 0;
+  j = 0;
+  swappedInPass = false;
+  sorted = false;
+  awaitingSwap = false;
+  nextBtn.disabled = false;
+  iterLabel.textContent = 'Click "Next Step" to start';
+  iterLabel.style.background = 'white';
+  iterLabel.style.color = '#333';
+  explanationText.textContent = 'Ready to begin sorting';
+  renderArray();
+  renderCode();
+}
+
+nextBtn.addEventListener('click', () => {
+  if (sorted) return;
+
+  const lines = HIGHLIGHT_LINES[currentLanguage];
+
+  // Check if current pass is complete
+  if (j >= arr.length - i - 1) {
+    if (!swappedInPass && i > 0) {
+      sorted = true;
+      nextBtn.disabled = true;
+      iterLabel.textContent = '✅ Sorting Complete!';
+      iterLabel.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+      iterLabel.style.color = 'white';
+      explanationText.textContent = 'All elements are now in order!';
+      renderArray();
+      renderCode();
+      return;
+    }
+    j = 0;
+    i++;
+    swappedInPass = false;
+    awaitingSwap = false;
+    renderCode(lines.outer);
+    renderArray();
+    explanationText.textContent = `Starting pass ${i + 1}`;
+    return;
+  }
+
+  // Two-click behavior
+  if (!awaitingSwap) {
+    // First click: show comparison
+    updateIterationLabel();
+    renderCode(lines.compare);
+    renderArray();
+    
+    const val1 = arr[j];
+    const val2 = arr[j + 1];
+    
+    if (val1 > val2) {
+      explanationText.textContent = `Comparing ${val1} and ${val2} — ${val1} is larger, so swapping`;
+      awaitingSwap = true;
+    } else {
+      explanationText.textContent = `Comparing ${val1} and ${val2} — ${val1} is smaller, no swap`;
+      awaitingSwap = true;
+    }
+  } else {
+    // Second click: perform swap if needed
+    if (arr[j] > arr[j + 1]) {
+      renderCode(lines.swap);
+      [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+      swappedInPass = true;
+      
+      const items = [...container.children].filter(child => child.classList.contains('item'));
+      const itemA = items[j];
+      const itemB = items[j + 1];
+      
+      nextBtn.disabled = true;
+      flipSwap(itemA, itemB, () => {
+        nextBtn.disabled = false;
+        j++;
+        awaitingSwap = false;
+      });
+    } else {
+      j++;
+      awaitingSwap = false;
+    }
+  }
+});
+
+newBtn.addEventListener('click', reset);
+
+// Initialize
+reset();
+</script>
+
+</body>
+</html>

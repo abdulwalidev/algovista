@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Step Selection Sort – Highlight Minimum</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background: #f5f5f5;
+  }
+
+  .page {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    display: flex;
+    gap: 12px;
+    padding: 24px;
+    border: 2px dashed #aaa;
+    align-items: flex-end;
+    min-height: 300px;
+    margin-bottom: 20px;
+    background: #fff;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .index {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+
+  .bar {
+    width: 40px;
+    height: var(--height);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 6px;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .arrow {
+    position: absolute;
+    top: -28px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .comparison {
+    position: absolute;
+    top: -48px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #34495e;
+  }
+
+  button {
+    padding: 10px 18px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+
+  #stepInfo {
+    font-size: 16px;
+    min-height: 24px;
+  }
+
+  /* ADS */
+  .sidebar {
+    width: 300px;
+    padding: 16px;
+    background: #fafafa;
+    border-left: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .ad-banner {
+    width: 200px;
+    height: 150px;
+    background: #eaeaea;
+    border: 1px dashed #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #666;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <div class="main">
+    <div class="container" id="container"></div>
+    <button id="nextStep">Next Step</button>
+    <div id="stepInfo"></div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="ad-banner">Ad 1</div>
+    <div class="ad-banner">Ad 2</div>
+    <div class="ad-banner">Ad 3</div>
+  </aside>
+
+</div>
+<script>
+const container = document.getElementById('container');
+const stepInfo = document.getElementById('stepInfo');
+
+let arr = [];
+let i = 0;
+let j = 1;
+let minIndex = 0;
+let phase = "scan";
+
+const STEP_DELAY = 70;   // control speed here
+let isBusy = false;       // prevents speeding up
+
+
+// colors
+function generateColors(n) {
+  return Array.from({ length: n }, (_, i) =>
+    `hsl(${(i * 360) / n}, 70%, 50%)`
+  );
+}
+
+function randomArray() {
+  return Array.from({ length: 10 }, () => 1 + Math.floor(Math.random() * 20));
+}
+
+function renderArray(array) {
+  container.innerHTML = '';
+  const colors = generateColors(array.length);
+
+  array.forEach((value, index) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+
+    const label = document.createElement('div');
+    label.className = 'comparison';
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+
+    const idx = document.createElement('div');
+    idx.className = 'index';
+    idx.textContent = index;
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.textContent = value;
+    bar.style.setProperty('--height', value * 12 + 'px');
+    bar.style.backgroundColor = colors[index];
+
+    item.append(label, arrow, idx, bar);
+    container.appendChild(item);
+  });
+}
+
+/* ---- FLIP SWAP (unchanged, but duration matched) ---- */
+function flipSwap(a, b) {
+  const rectA = a.getBoundingClientRect();
+  const rectB = b.getBoundingClientRect();
+
+  container.insertBefore(b, a);
+
+  const rectA2 = a.getBoundingClientRect();
+  const rectB2 = b.getBoundingClientRect();
+
+  a.style.transform = `translateX(${rectA.left - rectA2.left}px)`;
+  b.style.transform = `translateX(${rectB.left - rectB2.left}px)`;
+
+  requestAnimationFrame(() => {
+    a.style.transition = b.style.transition = 'transform 0.6s ease';
+    a.style.transform = b.style.transform = '';
+  });
+
+  setTimeout(() => {
+    [...container.children].forEach((el, idx) =>
+      el.querySelector('.index').textContent = idx
+    );
+    a.style.transition = b.style.transition = '';
+  }, 600);
+}
+
+// INIT
+arr = randomArray();
+renderArray(arr);
+stepInfo.textContent = 'Click Next Step to start Selection Sort';
+
+// CORE STEP LOGIC
+function runSelectionStep() {
+  const items = container.children;
+
+  [...items].forEach(el => {
+    el.querySelector('.arrow').textContent = '';
+    el.querySelector('.comparison').textContent = '';
+  });
+
+  if (i >= arr.length - 1) {
+    stepInfo.textContent = 'Sorting complete 🎉';
+    return;
+  }
+
+  if (phase === "scan") {
+    items[minIndex].querySelector('.arrow').textContent = '↓ min';
+    items[minIndex].querySelector('.arrow').style.color = 'red';
+
+    items[j].querySelector('.arrow').textContent = '↓ check';
+    items[j].querySelector('.arrow').style.color = 'blue';
+
+    if (arr[j] < arr[minIndex]) {
+      minIndex = j;
+      stepInfo.textContent = `New minimum found: ${arr[minIndex]}`;
+    } else {
+      stepInfo.textContent = `Compare ${arr[j]} with min ${arr[minIndex]}`;
+    }
+
+    j++;
+
+    if (j === arr.length) {
+      phase = "swap";
+    }
+  }
+
+  else if (phase === "swap") {
+
+  if (minIndex !== i) {
+    // swap in JS array FIRST
+    [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+
+    // then animate DOM swap
+    flipSwap(items[i], items[minIndex]);
+
+    stepInfo.textContent = `Swap index ${i} with min index ${minIndex}`;
+  } else {
+    stepInfo.textContent = `No swap needed at index ${i}`;
+  }
+
+  // move to next outer loop iteration
+  i++;
+  minIndex = i;
+  j = i + 1;
+  phase = "scan";
+}
+
+}
+
+// BUTTON (SLOWED + LOCKED)
+document.getElementById('nextStep').addEventListener('click', () => {
+  if (isBusy) return;
+
+  isBusy = true;
+
+  setTimeout(() => {
+    runSelectionStep();
+    isBusy = false;
+  }, STEP_DELAY);
+});
+</script>
+
+
+</body>
+</html>

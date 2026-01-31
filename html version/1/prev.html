@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>DSA VISUALIZOR - Learn Algorithms & Data Structures</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=PT+Mono&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css">
+  
+  <style>
+    body {
+      font-family: "PT Mono", monospace;
+      line-height: 1.6;
+      background: #ffffff;
+      overflow-x: hidden;
+      font-size: 16px;
+    }
+
+    .text-primary { color: #0389ff !important; }
+    
+    h1, h2, h3, h4 {
+      font-family: "Montserrat", sans-serif;
+      color: #000000;
+    }
+
+    .lines-wrap {
+      position: fixed;
+      z-index: -1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .lines-wrap .lines-inner {
+      position: absolute;
+      width: 1140px;
+      left: 50%;
+      margin-left: -570px;
+      top: 0;
+      height: 100%;
+      border-left: 1px solid #efefef;
+      border-right: 1px solid #efefef;
+    }
+    
+    .lines-wrap .lines-inner .lines {
+      position: absolute;
+      left: 33.333333%;
+      right: 33.333333%;
+      height: 100%;
+      border-left: 1px solid #efefef;
+      border-right: 1px solid #efefef;
+    }
+
+    .btn {
+      padding: 14px 20px;
+      border-radius: 0px;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: #0389ff;
+      border-color: #0389ff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1793ff;
+      border-color: #1793ff;
+    }
+
+    .btn-outline-black {
+      background: transparent;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .btn-outline-black:hover {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .untree_co-section {
+      padding: 7rem 0;
+    }
+
+    .heading {
+      font-size: 40px;
+      font-weight: 700;
+    }
+
+    .subheading {
+      font-size: 18px;
+    }
+
+    .section-heading {
+      font-size: 30px;
+      color: #000000;
+      font-weight: 700;
+    }
+
+    .wave svg {
+      width: 90px;
+      height: 20px;
+    }
+    
+    .wave path {
+      stroke: #0389ff;
+      stroke-width: 2px;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    .portfolio-item {
+      display: block;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 30px;
+      border-radius: 10px;
+    }
+
+    .portfolio-item .overlay {
+      position: relative;
+      z-index: 8;
+      opacity: 0;
+      visibility: hidden;
+      transition: .3s all ease;
+    }
+
+    .portfolio-item .overlay,
+    .portfolio-item .overlay:before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .portfolio-item .overlay:before {
+      background: rgba(0, 0, 0, 0.5);
+      content: "";
+    }
+
+    .portfolio-item:hover .overlay {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .portfolio-item-content {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+    }
+
+    .portfolio-item-content h3,
+    .portfolio-item-content p {
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .portfolio-item-content h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .portfolio-item-content p {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .portfolio-item img {
+      transition: .3s all ease;
+      transform: scale(1);
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+    }
+
+    .portfolio-item:hover img {
+      transform: scale(1.09);
+    }
+
+    .site-footer {
+      padding: 70px 0;
+      background: #f8f9fa;
+    }
+
+    .site-footer h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .site-footer a {
+      color: #777;
+    }
+
+    .site-footer a:hover {
+      color: #0389ff;
+      text-decoration: none;
+    }
+
+    @media (max-width: 767.98px) {
+      .lines-wrap { display: none; }
+      .heading { font-size: 32px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="lines-wrap">
+    <div class="lines-inner">
+      <div class="lines"></div>
+    </div>
+  </div>
+
+  <div class="untree_co-section pb-0" id="home-section">
+    <div class="container">
+      <div class="row justify-content-center text-center">
+        <div class="col-md-7">
+          <h1 class="heading mb-3"><strong>DSA<span class="text-primary">.</span> VISUALIZOR</strong></h1>
+          <h2 class="subheading mb-4">
+            Learn <strong>Data Structures & Algorithms</strong> with interactive visualizations. Master sorting, graphs, and problem-solving step by step.
+          </h2>
+          <p><a href="design.html" class="btn btn-outline-black">View Design System</a></p>    
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="untree_co-section" id="algorithms-section">
+    <div class="container">
+      <div class="row mb-5">
+        <div class="col-lg-7 text-center mx-auto">
+          <h2 class="section-heading mb-0"><strong>Algorithm Visualizations</strong></h2>
+          <p>Interactive step-by-step algorithm demonstrations</p>
+          <div class="wave">
+            <svg>
+              <path d="M10,10 L50,100 L90,50"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="bubble_sort.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Bubble Sort</h3>
+                <p>Sorting • O(n²)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500" alt="Bubble Sort" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="selection_sort.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Selection Sort</h3>
+                <p>Sorting • O(n²)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500" alt="Selection Sort" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="insertion_sort.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Insertion Sort</h3>
+                <p>Sorting • O(n²)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500" alt="Insertion Sort" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="merge_sort.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Merge Sort</h3>
+                <p>Sorting • O(n log n)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500" alt="Merge Sort" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="quick_sort.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Quick Sort</h3>
+                <p>Sorting • O(n log n)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=500" alt="Quick Sort" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="heap_sort.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Heap Sort</h3>
+                <p>Sorting • O(n log n)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500" alt="Heap Sort" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="bfs_graph.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>BFS Graph</h3>
+                <p>Graph Traversal • O(V+E)</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500" alt="BFS" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="dijsktra.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Dijkstra's Algorithm</h3>
+                <p>Shortest Path</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500" alt="Dijkstra" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="leetcode_two_sum.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Two Sum</h3>
+                <p>LeetCode Easy</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500" alt="Two Sum" class="img-fluid" />
+          </a>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <a href="leetcode_two_sum_bruteforce_vs_hashmap.html" class="portfolio-item">
+            <div class="overlay">
+              <div class="portfolio-item-content">
+                <h3>Two Sum Comparison</h3>
+                <p>Brute Force vs HashMap</p>
+              </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=500" alt="Comparison" class="img-fluid" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="widget">
+            <h3>Navigation</h3>
+            <ul class="list-unstyled">
+              <li><a href="#home-section">Home</a></li>
+              <li><a href="#algorithms-section">Algorithms</a></li>
+              <li><a href="design.html">Design System</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3">
+          <div class="widget">
+            <h3>Sorting</h3>
+            <ul class="list-unstyled">
+              <li><a href="bubble_sort.html">Bubble Sort</a></li>
+              <li><a href="merge_sort.html">Merge Sort</a></li>
+              <li><a href="quick_sort.html">Quick Sort</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3">
+          <div class="widget">
+            <h3>Graphs</h3>
+            <ul class="list-unstyled">
+              <li><a href="bfs_graph.html">BFS</a></li>
+              <li><a href="dijsktra.html">Dijkstra</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3">
+          <div class="widget">
+            <h3>LeetCode</h3>
+            <ul class="list-unstyled">
+              <li><a href="leetcode_two_sum.html">Two Sum</a></li>
+              <li><a href="leetcode_two_sum_bruteforce_vs_hashmap.html">Comparisons</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-5">
+        <div class="col-12 text-center">
+          <p class="mb-0">DSA Navigator &copy; 2026. Learn Algorithms Visually.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Selection Sort</title>
+</head>
+
+<body style="background-color:#1a1a1a;min-height:100vh;color:white;margin:0;font-family:Arial, sans-serif;">
+
+<!-- Top Banner Ad -->
+<div style="background-color:#2a2a2a;padding:15px;text-align:center;border-bottom:1px solid #444;">
+  <div style="width:728px;height:90px;background-color:#333;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;">
+    Ad Space (728x90)
+  </div>
+</div>
+
+<div style="display:flex;max-width:1400px;margin:0 auto;">
+
+<!-- Sidebar Ad -->
+<div style="width:160px;padding:20px;">
+  <div style="position:sticky;top:20px;background-color:#333;width:160px;height:600px;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;font-size:12px;text-align:center;">
+    Ad Space<br>(160x600)
+  </div>
+</div>
+
+<!-- Main Content -->
+<div style="flex:1;padding:40px;">
+
+<h1 style="text-align:center;font-size:48px;margin-bottom:10px;">Selection Sort</h1>
+
+<!-- Complexity Info -->
+<div style="display:flex;justify-content:center;gap:30px;margin-bottom:30px;font-size:16px;">
+  <div>Time: <span style="color:#22c55e;font-weight:bold;">O(n²)</span></div>
+  <div>Space: <span style="color:#22c55e;font-weight:bold;">O(1)</span></div>
+  <div>Steps: <span id="steps" style="color:#eab308;font-weight:bold;">0</span></div>
+</div>
+
+<!-- Controls -->
+<div style="text-align:center;margin-bottom:30px;">
+  <label style="font-size:18px;margin-right:10px;">Speed (ms):</label>
+  <input
+    id="speedInput"
+    type="number"
+    value="1000"
+    min="100"
+    max="5000"
+    step="100"
+    style="
+      width:100px;
+      padding:10px;
+      font-size:18px;
+      background-color:#333;
+      color:white;
+      border:2px solid #555;
+      border-radius:5px;
+      margin-right:20px;
+    "
+  />
+
+  <button onclick="start()"
+    style="padding:12px 30px;font-size:18px;background-color:#22c55e;color:white;border:none;border-radius:5px;cursor:pointer;margin-right:10px;">
+    Start
+  </button>
+
+  <button onclick="reset()"
+    style="padding:12px 30px;font-size:18px;background-color:#ef4444;color:white;border:none;border-radius:5px;cursor:pointer;">
+    Reset
+  </button>
+</div>
+
+<!-- Message -->
+<div id="message"
+  style="text-align:center;font-size:20px;margin-bottom:30px;padding:15px;background-color:#333;border-radius:10px;min-height:60px;display:flex;align-items:center;justify-content:center;">
+  Click Start!
+</div>
+
+<!-- Array Visualization -->
+<div id="array"
+  style="display:flex;justify-content:center;gap:10px;margin-bottom:40px;">
+</div>
+
+<!-- Code -->
+<div style="background-color:#1e1e1e;border-radius:10px;padding:20px;margin-bottom:40px;">
+  <div style="color:#888;font-size:14px;margin-bottom:10px;font-weight:bold;">
+    C++ CODE (Execution Flow):
+  </div>
+  <pre id="code" style="font-family:monospace;font-size:16px;margin:0;line-height:1.8;"></pre>
+</div>
+
+<!-- Middle Ad -->
+<div style="background-color:#333;width:336px;height:280px;margin:40px auto;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;">
+  Ad Space (336x280)
+</div>
+
+</div>
+
+<!-- Right Sidebar Ad -->
+<div style="width:160px;padding:20px;">
+  <div style="position:sticky;top:20px;background-color:#333;width:160px;height:600px;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;font-size:12px;text-align:center;">
+    Ad Space<br>(160x600)
+  </div>
+</div>
+
+</div>
+
+<!-- Bottom Ad -->
+<div style="background-color:#2a2a2a;padding:20px;text-align:center;border-top:1px solid #444;margin-top:40px;">
+  <div style="width:728px;height:90px;background-color:#333;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#666;border-radius:5px;">
+    Ad Space (728x90)
+  </div>
+</div>
+
+<script>
+let array = [5,2,8,1,9,3,7,4,6];
+let i = 0;
+let j = 0;
+let minIdx = 0;
+let playing = false;
+let speed = 1000;
+let steps = 0;
+
+const codeLines = [
+  'void selectionSort(int arr[], int n) {',
+  '    for (int i = 0; i < n-1; i++) {',
+  '        int minIdx = i;',
+  '        for (int j = i+1; j < n; j++) {',
+  '            if (arr[j] < arr[minIdx])',
+  '                minIdx = j;',
+  '        }',
+  '        if(minIdx != i) swap(arr[i], arr[minIdx]);',
+  '    }',
+  '}'
+];
+
+function renderArray(active=[], swapped=[]) {
+  const container = document.getElementById("array");
+  container.innerHTML = "";
+  array.forEach((num, idx) => {
+    let bg = "#555";
+    if (swapped.includes(idx)) bg = "#22c55e";
+    else if (active.includes(idx)) bg = "#eab308";
+    else if (idx < steps) bg = "#333";
+
+    container.innerHTML += `
+      <div style="text-align:center">
+        <div style="width:80px;height:80px;background-color:${bg};
+        display:flex;align-items:center;justify-content:center;
+        font-size:32px;font-weight:bold;border-radius:10px;
+        transition:all 0.3s;">
+        ${num}
+        </div>
+        <div style="margin-top:8px;font-size:14px;color:#888;font-weight:bold;">[${idx}]</div>
+      </div>`;
+  });
+}
+
+function renderCode(active) {
+  const code = document.getElementById("code");
+  code.innerHTML = "";
+  codeLines.forEach((line, idx) => {
+    code.innerHTML += `
+      <div style="background-color:${active===idx?'#3a3a00':'transparent'};
+      padding:4px 8px;
+      border-left:${active===idx?'4px solid #eab308':'4px solid transparent'};
+      transition:all 0.3s;">
+      ${line}
+      </div>`;
+  });
+}
+
+function step() {
+  if (!playing) return;
+
+  if (i < array.length-1) {
+    if (j < array.length) {
+      renderCode(4);
+      document.getElementById("message").innerText = 
+        `Comparing arr[${j}] = ${array[j]} with current min arr[${minIdx}] = ${array[minIdx]}`;
+      if (array[j] < array[minIdx]) minIdx = j;
+      renderArray([j,minIdx]);
+      j++;
+    } else {
+      if (minIdx !== i) {
+        [array[i], array[minIdx]] = [array[minIdx], array[i]];
+        renderArray([], [i,minIdx]);
+      }
+      i++;
+      j = i+1;
+      minIdx = i;
+      steps = i;
+      document.getElementById("steps").innerText = steps;
+    }
+    setTimeout(step, speed);
+  } else {
+    document.getElementById("message").innerText = "Array Sorted 🎉";
+    playing = false;
+  }
+}
+
+function start() {
+  reset();
+  playing = true;
+  minIdx = i;
+  j = i+1;
+  step();
+}
+
+function reset() {
+  array = [5,2,8,1,9,3,7,4,6];
+  i = 0;
+  j = 1;
+  minIdx = i;
+  playing = false;
+  steps = 0;
+  document.getElementById("steps").innerText = 0;
+  document.getElementById("message").innerText = "Click Start!";
+  renderArray();
+  renderCode(-1);
+}
+
+document.getElementById("speedInput").oninput = e => {
+  speed = Number(e.target.value);
+};
+
+renderArray();
+renderCode(-1);
+</script>
+
+</body>
+</html>

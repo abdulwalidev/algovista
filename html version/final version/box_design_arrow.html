@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Centered Boxes with L-Shaped Arrow</title>
+<style>
+  .container {
+    position: relative;
+    width: 400px;
+    height: 300px;
+    margin: 50px auto;
+  }
+
+  .box {
+    width: 80px;
+    height: 80px;
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    background: #f0f0f0;
+  }
+
+  /* Centered box positions */
+  #box1 { top: 0; left: 80px; }
+  #box2 { bottom: 0; left: 80px; }
+  #box3 { top: 0; left: 240px; }
+
+  /* Arrow from Box1 → Box3 (straight) */
+  .arrow1 {
+    position: absolute;
+    top: 40px;    /* middle of box1 */
+    left: 160px;  /* right edge of box1 */
+    width: 80px;  /* distance to box3 */
+    height: 2px;
+    background: black;
+  }
+  .arrow1::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    border: 6px solid transparent;
+    border-left-color: black;
+  }
+
+  /* L-shaped arrow from Box2 → Box3 */
+  /* Horizontal part */
+  .arrow2-horizontal {
+    position: absolute;
+    bottom: 40px; /* vertical center of box2 */
+    left: 120px;  /* right edge of box2 */
+    width: 120px; /* go right until middle of box3 */
+    height: 2px;
+    background: black;
+  }
+
+  /* Vertical part */
+  .arrow2-vertical {
+    position: absolute;
+    bottom: 40px;     /* start from end of horizontal */
+    left: 240px;      /* middle of box3 */
+    width: 2px;
+    height: 40px;     /* vertical distance up to box3 */
+    background: black;
+  }
+
+  /* Arrowhead */
+  .arrow2-vertical::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    border: 6px solid transparent;
+    border-bottom-color: black;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="box" id="box1">1</div>
+  <div class="box" id="box2">2</div>
+  <div class="box" id="box3">3</div>
+
+  <div class="arrow1"></div>
+  <div class="arrow2-horizontal"></div>
+  <div class="arrow2-vertical"></div>
+</div>
+
+</body>
+</html>

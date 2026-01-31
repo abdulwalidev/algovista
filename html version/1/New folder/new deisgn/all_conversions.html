@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expression Converter – Step by Step</title>
+
+<style>
+  body {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    background: #f5f5f5;
+    font-family: sans-serif;
+  }
+
+  .left {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .left h3 {
+    margin-top: 0;
+  }
+
+  .right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .controls {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .controls label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+
+  .controls input,
+  .controls select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+
+  .controls button {
+    padding: 10px 18px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  .status {
+    background: #2c3e50;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  .table-container {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    flex: 1;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+
+  th {
+    background: #34495e;
+    color: white;
+    font-weight: bold;
+  }
+
+  tr:nth-child(even) {
+    background: #f9f9f9;
+  }
+
+  .current-row {
+    background: #ffffcc !important;
+    font-weight: bold;
+  }
+
+  .stack-cell {
+    font-family: monospace;
+    color: #e74c3c;
+  }
+
+  .result-cell {
+    font-family: monospace;
+    color: #27ae60;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="left">
+  <h3>Expression Converter</h3>
+  <p><b>Conversions Available:</b></p>
+  <ul>
+    <li>Infix → Postfix</li>
+    <li>Infix → Prefix</li>
+    <li>Postfix → Infix</li>
+    <li>Postfix → Prefix</li>
+    <li>Prefix → Infix</li>
+    <li>Prefix → Postfix</li>
+  </ul>
+  <p><b>How it works:</b></p>
+  <p>Enter an expression and select conversion type. Click "Next Step" to see each step of the conversion process with stack states.</p>
+  <p><b>Examples:</b><br>
+  Infix: A+B*C<br>
+  Postfix: ABC*+<br>
+  Prefix: +A*BC</p>
+</div>
+
+<div class="right">
+  <div class="controls">
+    <label>Expression:</label>
+    <input type="text" id="expression" placeholder="e.g., A+B*C or ABC*+ or +A*BC">
+    
+    <label>Conversion Type:</label>
+    <select id="conversionType">
+      <option value="infix-postfix">Infix → Postfix</option>
+      <option value="infix-prefix">Infix → Prefix</option>
+      <option value="postfix-infix">Postfix → Infix</option>
+      <option value="postfix-prefix">Postfix → Prefix</option>
+      <option value="prefix-infix">Prefix → Infix</option>
+      <option value="prefix-postfix">Prefix → Postfix</option>
+    </select>
+
+    <button id="startBtn">Start Conversion</button>
+    <button id="nextBtn" disabled>Next Step</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+
+  <div class="status" id="status">Enter an expression and click "Start Conversion"</div>
+
+  <div class="table-container">
+    <table id="stepsTable">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Symbol</th>
+          <th>Operator Stack</th>
+          <th>Operand Stack</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const expressionInput = document.getElementById('expression');
+const conversionType = document.getElementById('conversionType');
+const startBtn = document.getElementById('startBtn');
+const nextBtn = document.getElementById('nextBtn');
+const resetBtn = document.getElementById('resetBtn');
+const status = document.getElementById('status');
+const tableBody = document.getElementById('tableBody');
+
+let steps = [];
+let currentStep = -1;
+
+function precedence(op) {
+  if (op === '+' || op === '-') return 1;
+  if (op === '*' || op === '/') return 2;
+  if (op === '^') return 3;
+  return 0;
+}
+
+function isOperator(c) {
+  return ['+', '-', '*', '/', '^'].includes(c);
+}
+
+function isOperand(c) {
+  return /[A-Za-z0-9]/.test(c);
+}
+
+function infixToPostfix(expr) {
+  const steps = [];
+  const operatorStack = [];
+  let result = '';
+  
+  for (let i = 0; i < expr.length; i++) {
+    const c = expr[i];
+    
+    if (c === ' ') continue;
+    
+    if (isOperand(c)) {
+      result += c;
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result
+      });
+    } else if (c === '(') {
+      operatorStack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result
+      });
+    } else if (c === ')') {
+      while (operatorStack.length && operatorStack[operatorStack.length - 1] !== '(') {
+        result += operatorStack.pop();
+      }
+      operatorStack.pop(); // Remove '('
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result
+      });
+    } else if (isOperator(c)) {
+      while (operatorStack.length && 
+             precedence(operatorStack[operatorStack.length - 1]) >= precedence(c)) {
+        result += operatorStack.pop();
+      }
+      operatorStack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result
+      });
+    }
+  }
+  
+  while (operatorStack.length) {
+    result += operatorStack.pop();
+    steps.push({
+      symbol: 'End',
+      operatorStack: [...operatorStack],
+      operandStack: [],
+      result: result
+    });
+  }
+  
+  return steps;
+}
+
+function infixToPrefix(expr) {
+  // Reverse, convert to postfix with swapped parens, then reverse result
+  let reversed = expr.split('').reverse().join('');
+  reversed = reversed.replace(/\(/g, 'TEMP').replace(/\)/g, '(').replace(/TEMP/g, ')');
+  
+  const steps = [];
+  const operatorStack = [];
+  let result = '';
+  
+  for (let i = 0; i < reversed.length; i++) {
+    const c = reversed[i];
+    
+    if (c === ' ') continue;
+    
+    if (isOperand(c)) {
+      result += c;
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result.split('').reverse().join('')
+      });
+    } else if (c === '(') {
+      operatorStack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result.split('').reverse().join('')
+      });
+    } else if (c === ')') {
+      while (operatorStack.length && operatorStack[operatorStack.length - 1] !== '(') {
+        result += operatorStack.pop();
+      }
+      operatorStack.pop();
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result.split('').reverse().join('')
+      });
+    } else if (isOperator(c)) {
+      while (operatorStack.length && 
+             precedence(operatorStack[operatorStack.length - 1]) > precedence(c)) {
+        result += operatorStack.pop();
+      }
+      operatorStack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [...operatorStack],
+        operandStack: [],
+        result: result.split('').reverse().join('')
+      });
+    }
+  }
+  
+  while (operatorStack.length) {
+    result += operatorStack.pop();
+    steps.push({
+      symbol: 'End',
+      operatorStack: [...operatorStack],
+      operandStack: [],
+      result: result.split('').reverse().join('')
+    });
+  }
+  
+  return steps;
+}
+
+function postfixToInfix(expr) {
+  const steps = [];
+  const stack = [];
+  
+  for (let i = 0; i < expr.length; i++) {
+    const c = expr[i];
+    
+    if (c === ' ') continue;
+    
+    if (isOperand(c)) {
+      stack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    } else if (isOperator(c)) {
+      const op2 = stack.pop();
+      const op1 = stack.pop();
+      const temp = `(${op1}${c}${op2})`;
+      stack.push(temp);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    }
+  }
+  
+  return steps;
+}
+
+function postfixToPrefix(expr) {
+  const steps = [];
+  const stack = [];
+  
+  for (let i = 0; i < expr.length; i++) {
+    const c = expr[i];
+    
+    if (c === ' ') continue;
+    
+    if (isOperand(c)) {
+      stack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    } else if (isOperator(c)) {
+      const op2 = stack.pop();
+      const op1 = stack.pop();
+      const temp = `${c}${op1}${op2}`;
+      stack.push(temp);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    }
+  }
+  
+  return steps;
+}
+
+function prefixToInfix(expr) {
+  const steps = [];
+  const stack = [];
+  
+  for (let i = expr.length - 1; i >= 0; i--) {
+    const c = expr[i];
+    
+    if (c === ' ') continue;
+    
+    if (isOperand(c)) {
+      stack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    } else if (isOperator(c)) {
+      const op1 = stack.pop();
+      const op2 = stack.pop();
+      const temp = `(${op1}${c}${op2})`;
+      stack.push(temp);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    }
+  }
+  
+  return steps;
+}
+
+function prefixToPostfix(expr) {
+  const steps = [];
+  const stack = [];
+  
+  for (let i = expr.length - 1; i >= 0; i--) {
+    const c = expr[i];
+    
+    if (c === ' ') continue;
+    
+    if (isOperand(c)) {
+      stack.push(c);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    } else if (isOperator(c)) {
+      const op1 = stack.pop();
+      const op2 = stack.pop();
+      const temp = `${op1}${op2}${c}`;
+      stack.push(temp);
+      steps.push({
+        symbol: c,
+        operatorStack: [],
+        operandStack: [...stack],
+        result: stack.length > 0 ? stack[stack.length - 1] : ''
+      });
+    }
+  }
+  
+  return steps;
+}
+
+startBtn.addEventListener('click', () => {
+  const expr = expressionInput.value.trim();
+  if (!expr) {
+    status.textContent = 'Please enter an expression';
+    return;
+  }
+  
+  const type = conversionType.value;
+  
+  try {
+    switch(type) {
+      case 'infix-postfix':
+        steps = infixToPostfix(expr);
+        break;
+      case 'infix-prefix':
+        steps = infixToPrefix(expr);
+        break;
+      case 'postfix-infix':
+        steps = postfixToInfix(expr);
+        break;
+      case 'postfix-prefix':
+        steps = postfixToPrefix(expr);
+        break;
+      case 'prefix-infix':
+        steps = prefixToInfix(expr);
+        break;
+      case 'prefix-postfix':
+        steps = prefixToPostfix(expr);
+        break;
+    }
+    
+    currentStep = -1;
+    tableBody.innerHTML = '';
+    nextBtn.disabled = false;
+    status.textContent = 'Click "Next Step" to begin';
+  } catch(e) {
+    status.textContent = 'Error: Invalid expression';
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    const step = steps[currentStep];
+    
+    const row = tableBody.insertRow();
+    row.className = 'current-row';
+    
+    row.insertCell(0).textContent = currentStep + 1;
+    row.insertCell(1).textContent = step.symbol;
+    row.insertCell(2).innerHTML = `<span class="stack-cell">${step.operatorStack.join(', ') || '—'}</span>`;
+    row.insertCell(3).innerHTML = `<span class="stack-cell">${step.operandStack.join(', ') || '—'}</span>`;
+    row.insertCell(4).innerHTML = `<span class="result-cell">${step.result || '—'}</span>`;
+    
+    // Remove highlight from previous rows
+    const rows = tableBody.getElementsByTagName('tr');
+    for (let i = 0; i < rows.length - 1; i++) {
+      rows[i].classList.remove('current-row');
+    }
+    
+    status.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+    
+    if (currentStep === steps.length - 1) {
+      nextBtn.disabled = true;
+      status.textContent = `Conversion complete! Result: ${step.result}`;
+    }
+  }
+});
+
+resetBtn.addEventListener('click', () => {
+  expressionInput.value = '';
+  tableBody.innerHTML = '';
+  steps = [];
+  currentStep = -1;
+  nextBtn.disabled = true;
+  status.textContent = 'Enter an expression and click "Start Conversion"';
+});
+</script>
+
+</body>
+</html>

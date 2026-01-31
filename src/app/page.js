@@ -1,533 +1,194 @@
-"use client"
+"use client";
 
-import Link from 'next/link';
+import Head from "next/head";
+
+/* =========================
+   DATA CONFIG (EDIT HERE)
+========================= */
+
+const stats = [
+  { value: "10+", label: "Algorithm Visualizations" },
+  { value: "6", label: "Sorting Algorithms" },
+  { value: "100%", label: "Free & Open Source" },
+];
+
+const sortingAlgorithms = [
+  {
+    title: "Bubble Sort",
+    desc: "Simple comparison-based sorting",
+    complexity: "O(n²)",
+    image: "/img/bubblesort.png",
+    link: "/bubble_sort",
+  },
+  {
+    title: "Selection Sort",
+    desc: "Find minimum and swap",
+    complexity: "O(n²)",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500",
+    link: "/selection_sort",
+  },
+  {
+    title: "Insertion Sort",
+    desc: "Build sorted array incrementally",
+    complexity: "O(n²)",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500",
+    link: "/insertion_sort",
+  },
+  {
+    title: "Merge Sort",
+    desc: "Divide and conquer",
+    complexity: "O(n log n)",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500",
+    link: "/merge_sort",
+  },
+  {
+    title: "Quick Sort",
+    desc: "Efficient partitioning",
+    complexity: "O(n log n)",
+    image: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=500",
+    link: "/quick_sort",
+  },
+  {
+    title: "Heap Sort",
+    desc: "Binary heap based sorting",
+    complexity: "O(n log n)",
+    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500",
+    link: "/heap_sort",
+  },
+];
+
+const graphAlgorithms = [
+  {
+    title: "BFS Traversal",
+    desc: "Breadth-first graph traversal",
+    complexity: "O(V + E)",
+    image: "/img/graph.png",
+    link: "/bfs_graph",
+  },
+  {
+    title: "Dijkstra",
+    desc: "Shortest path algorithm",
+    complexity: "O((V+E) log V)",
+    image: "/img/dj.png",
+    link: "/dijkstra",
+  },
+];
+
+/* =========================
+   REUSABLE CARD
+========================= */
+
+function AlgorithmCard({ item }) {
+  return (
+    <a href={item.link} className="portfolio-item">
+      <div className="overlay">
+        <div className="portfolio-item-content">
+          <h3>{item.title}</h3>
+          <p>{item.desc}</p>
+          <span className="complexity-badge">
+            Time: {item.complexity}
+          </span>
+        </div>
+      </div>
+      <img src={item.image} alt={item.title} />
+    </a>
+  );
+}
+
+/* =========================
+   PAGE
+========================= */
 
 export default function Home() {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff' }}>
-      {/* Modern Navigation */}
-      <div style={{ 
-        backgroundColor: '#fff',
-        borderBottom: '2px solid #e5e5e5',
-        padding: '16px 0',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
-      }}>
-        <div style={{ 
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ 
-            fontSize: '32px', 
-            fontWeight: 'bold',
-            color: '#1cb0f6',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <span>💡</span>
-            AlgoLearn
-          </div>
-          
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <button style={{ 
-              background: 'none',
-              border: 'none',
-              color: '#777',
-              fontSize: '16px',
-              cursor: 'pointer',
-              fontWeight: '700',
-              padding: '8px 16px',
-              borderRadius: '12px',
-              transition: 'background 0.2s'
-            }}>
-              EXPLORE
-            </button>
-            <button style={{
-              backgroundColor: '#1cb0f6',
-              color: 'white',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '12px',
-              fontSize: '15px',
-              cursor: 'pointer',
-              fontWeight: '700',
-              boxShadow: '0 4px 0 #1899D6',
-              transition: 'transform 0.1s'
-            }}
-            onMouseDown={(e) => {
-              e.currentTarget.style.transform = 'translateY(2px)';
-              e.currentTarget.style.boxShadow = '0 2px 0 #1899D6';
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 0 #1899D6';
-            }}>
-              GET STARTED
-            </button>
-          </div>
-        </div>
-      </div>
+    <>
+      <Head>
+        <title>DSA Navigator</title>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=PT+Mono&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css"
+        />
+      </Head>
 
-      {/* Hero Section - Duolingo Style */}
-      <div style={{ 
-        maxWidth: '1100px',
-        margin: '0 auto',
-        padding: '80px 20px 60px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '60px',
-        alignItems: 'center'
-      }}>
-        <div>
-          <h1 style={{ 
-            fontSize: '48px',
-            fontWeight: '800',
-            color: '#4b4b4b',
-            marginBottom: '24px',
-            lineHeight: '1.2'
-          }}>
-            The fun way to learn algorithms
+      {/* HERO */}
+      <section className="untree_co-section text-center">
+        <div className="container">
+          <h1 className="heading">
+            DSA<span className="text-primary">.</span> Navigator
           </h1>
-          <p style={{ 
-            fontSize: '20px',
-            color: '#777',
-            marginBottom: '32px',
-            lineHeight: '1.6'
-          }}>
-            Learn DSA through interactive visualizations. It's fun, effective, and 100% free.
+          <p className="subheading mt-4">
+            Master <strong>Data Structures & Algorithms</strong> with interactive
+            visualizations.
           </p>
-          
-          <button style={{
-            backgroundColor: '#58cc02',
-            color: 'white',
-            border: 'none',
-            padding: '16px 40px',
-            borderRadius: '16px',
-            fontSize: '17px',
-            cursor: 'pointer',
-            fontWeight: '700',
-            boxShadow: '0 6px 0 #58A700',
-            transition: 'transform 0.1s',
-            marginBottom: '20px'
-          }}
-          onMouseDown={(e) => {
-            e.currentTarget.style.transform = 'translateY(3px)';
-            e.currentTarget.style.boxShadow = '0 3px 0 #58A700';
-          }}
-          onMouseUp={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 6px 0 #58A700';
-          }}>
-            GET STARTED
-          </button>
-          
-          <div style={{ 
-            display: 'flex', 
-            gap: '30px',
-            marginTop: '40px',
-            fontSize: '15px',
-            color: '#777'
-          }}>
-            <div>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: '#4b4b4b' }}>20+</div>
-              <div>Algorithms</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: '#4b4b4b' }}>1</div>
-              <div>Active learners</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: '#4b4b4b' }}>100%</div>
-              <div>Free (maybe depends we("i") might make it 2$/month if we bouttu end up broke, we need bread gng🙏, pls understand)</div>
-            </div>
+        </div>
+      </section>
+
+      {/* STATS */}
+      <section className="stats-section">
+        <div className="container">
+          <div className="row">
+            {stats.map((s, i) => (
+              <div className="col-md-4" key={i}>
+                <div className="stat-box">
+                  <h2>{s.value}</h2>
+                  <p>{s.label}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Mascot/Illustration Area */}
-        <div style={{
-          
-          borderRadius: 'px',
-          padding: 'px',
-          textAlign: 'center',
-          
-        }}>
-          <div style={{ fontSize: '120px' }}>🎯</div>
-          <div style={{ 
-            fontSize: '24px', 
-            fontWeight: '700', 
-            color: '#4b4b4b',
-            marginTop: '20px'
-          }}>
-            Start your journey!
+      {/* SORTING */}
+      <section className="untree_co-section" id="sorting">
+        <div className="container">
+          <div className="text-center mb-5">
+            <div className="category-badge">📊 Sorting Algorithms</div>
+            <h2 className="section-heading">Sorting Algorithms</h2>
+            <p className="section-subheading">
+              Visual step-by-step sorting breakdowns
+            </p>
+          </div>
+
+          <div className="row">
+            {sortingAlgorithms.map((algo, i) => (
+              <div className="col-sm-6 col-lg-4" key={i}>
+                <AlgorithmCard item={algo} />
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Learning Path Section */}
-      <div style={{ 
-        backgroundColor: '#f7f7f7',
-        padding: '60px 20px'
-      }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h2 style={{ 
-            fontSize: '36px',
-            fontWeight: '800',
-            color: '#4b4b4b',
-            marginBottom: '40px',
-            textAlign: 'center'
-          }}>
-            Choose your path
-          </h2>
-          
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '24px'
-          }}>
-            {/* Searching Path */}
-            <div style={{
-              backgroundColor: '#fff',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '2px solid #e5e5e5',
-              transition: 'transform 0.2s, border-color 0.2s',
-              cursor: 'pointer'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.borderColor = '#1cb0f6';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = '#e5e5e5';
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-              <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4b4b4b', marginBottom: '12px' }}>
-                Searching
-              </h3>
-              <p style={{ color: '#777', fontSize: '15px', marginBottom: '16px' }}>
-                Master search algorithms from linear to binary
-              </p>
-              <div style={{
-                backgroundColor: '#e5f5ff',
-                color: '#1cb0f6',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '700',
-                display: 'inline-block'
-              }}>
-                3 LESSONS
-              </div>
-            </div>
+      {/* GRAPHS */}
+      <section className="untree_co-section" id="graphs">
+        <div className="container">
+          <div className="text-center mb-5">
+            <div className="category-badge">🌐 Graph Algorithms</div>
+            <h2 className="section-heading">Graph Algorithms</h2>
+            <p className="section-subheading">
+              Traversal & pathfinding visualizations
+            </p>
+          </div>
 
-            {/* Sorting Path */}
-            <div style={{
-              backgroundColor: '#fff',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '2px solid #e5e5e5',
-              transition: 'transform 0.2s, border-color 0.2s',
-              cursor: 'pointer'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.borderColor = '#58cc02';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = '#e5e5e5';
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
-              <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4b4b4b', marginBottom: '12px' }}>
-                Sorting
-              </h3>
-              <p style={{ color: '#777', fontSize: '15px', marginBottom: '16px' }}>
-                Learn sorting from bubble to quick sort
-              </p>
-              <div style={{
-                backgroundColor: '#e7ffe5',
-                color: '#58cc02',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '700',
-                display: 'inline-block'
-              }}>
-                5 LESSONS
+          <div className="row justify-content-center">
+            {graphAlgorithms.map((algo, i) => (
+              <div className="col-sm-6 col-lg-4" key={i}>
+                <AlgorithmCard item={algo} />
               </div>
-            </div>
-
-            {/* Graphs Path */}
-            <div style={{
-              backgroundColor: '#fff',
-              borderRadius: '16px',
-              padding: '32px',
-              border: '2px solid #e5e5e5',
-              transition: 'transform 0.2s, border-color 0.2s',
-              cursor: 'pointer'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.borderColor = '#ff9600';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = '#e5e5e5';
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌳</div>
-              <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#4b4b4b', marginBottom: '12px' }}>
-                Graphs
-              </h3>
-              <p style={{ color: '#777', fontSize: '15px', marginBottom: '16px' }}>
-                Explore DFS, BFS, and pathfinding
-              </p>
-              <div style={{
-                backgroundColor: '#fff0e5',
-                color: '#ff9600',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '700',
-                display: 'inline-block'
-              }}>
-                6 LESSONS
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Popular Algorithms - Interactive Cards */}
-      <div style={{ 
-        maxWidth: '1100px',
-        margin: '0 auto',
-        padding: '80px 20px'
-      }}>
-        <h2 style={{ 
-          fontSize: '36px',
-          fontWeight: '800',
-          color: '#4b4b4b',
-          marginBottom: '40px'
-        }}>
-          Start learning 🚀
-        </h2>
-        
-        <div style={{ display: 'grid', gap: '20px' }}>
-          {/* Linear Search - CLICKABLE */}
-          <Link href="/linear-search" style={{ textDecoration: 'none' }}>
-            <div style={{ 
-              backgroundColor: '#fff',
-              borderRadius: '16px',
-              padding: '28px',
-              border: '2px solid #e5e5e5',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateX(8px)';
-              e.currentTarget.style.borderColor = '#1cb0f6';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateX(0)';
-              e.currentTarget.style.borderColor = '#e5e5e5';
-              e.currentTarget.style.boxShadow = 'none';
-            }}>
-              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: '#e5f5ff',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '28px'
-                }}>
-                  🔍
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#4b4b4b', marginBottom: '4px' }}>
-                    Linear Search
-                  </h3>
-                  <p style={{ color: '#777', fontSize: '15px' }}>
-                    Check each element one by one
-                  </p>
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{
-                  backgroundColor: '#dcfce7',
-                  color: '#16a34a',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '700'
-                }}>
-                  EASY
-                </div>
-                <div style={{
-                  color: '#1cb0f6',
-                  fontSize: '32px',
-                  fontWeight: '700'
-                }}>
-                  →
-                </div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Binary Search - Coming Soon */}
-          <div style={{ 
-            backgroundColor: '#fff',
-            borderRadius: '16px',
-            padding: '28px',
-            border: '2px solid #e5e5e5',
-            cursor: 'not-allowed',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            opacity: 0.5
-          }}>
-            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                backgroundColor: '#f7f7f7',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '28px'
-              }}>
-                🎯
-              </div>
-              <div>
-                <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#4b4b4b', marginBottom: '4px' }}>
-                  Binary Search
-                </h3>
-                <p style={{ color: '#777', fontSize: '15px' }}>
-                  Coming soon...
-                </p>
-              </div>
-            </div>
-            
-            <div style={{
-              backgroundColor: '#f7f7f7',
-              color: '#afafaf',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '13px',
-              fontWeight: '700'
-            }}>
-              LOCKED 🔒
-            </div>
-          </div>
-
-            {/* Bubble Sort - Coming Soon */}
-            <div style={{ 
-              backgroundColor: '#fff',
-              borderRadius: '16px',
-              padding: '28px',
-              border: '2px solid #e5e5e5',
-              cursor: 'not-allowed',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              opacity: 0.5
-            }}>
-              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: '#f7f7f7',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '28px'
-                }}>
-                  📊
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#4b4b4b', marginBottom: '4px' }}>
-                    Bubble Sort
-                  </h3>
-                  <p style={{ color: '#777', fontSize: '15px' }}>
-                    Coming soon...
-                  </p>
-                </div>
-              </div>
-              
-              <div style={{
-                backgroundColor: '#f7f7f7',
-                color: '#afafaf',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '700'
-              }}>
-                LOCKED 🔒
-              </div>
-            </div>
-          </div>
-        </div>
-
-      {/* Footer CTA */}
-      <div style={{
-        backgroundColor: '#1cb0f6',
-        padding: '60px 20px',
-        textAlign: 'center'
-      }}>
-        <h2 style={{
-          fontSize: '36px',
-          fontWeight: '800',
-          color: 'white',
-          marginBottom: '16px'
-        }}>
-          Ready to start?
-        </h2>
-        <p style={{
-          fontSize: '18px',
-          color: 'rgba(255,255,255,0.9)',
-          marginBottom: '32px'
-        }}>
-          Join thousands learning algorithms the fun way
-        </p>
-        <button style={{
-          backgroundColor: '#fff',
-          color: '#1cb0f6',
-          border: 'none',
-          padding: '16px 48px',
-          borderRadius: '16px',
-          fontSize: '17px',
-          cursor: 'pointer',
-          fontWeight: '700',
-          boxShadow: '0 6px 0 rgba(0,0,0,0.1)',
-          transition: 'transform 0.1s'
-        }}
-        onMouseDown={(e) => {
-          e.currentTarget.style.transform = 'translateY(3px)';
-          e.currentTarget.style.boxShadow = '0 3px 0 rgba(0,0,0,0.1)';
-        }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 6px 0 rgba(0,0,0,0.1)';
-        }}>
-          START NOW - IT'S FREE
-        </button>
-      </div>
-    </div>
+      {/* FOOTER */}
+      <footer className="site-footer text-center">
+        <p>DSA Navigator © 2026. Learn Algorithms Visually.</p>
+      </footer>
+    </>
   );
 }
