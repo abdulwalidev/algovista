@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kruskal's Algorithm - Interactive Visualizer</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 320px 1fr 420px;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+  background: #f5f5f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+/* LEFT PANEL - Graph Builder */
+.builder {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.builder h2 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.rules {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.rules b {
+  color: #333;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.canvas-container {
+  flex: 1;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  position: relative;
+  background: white;
+  cursor: crosshair;
+  min-height: 300px;
+}
+
+#graphCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.builder-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mode-btn {
+  padding: 10px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  background: #f0f0f0;
+}
+
+.mode-btn.active {
+  background: #333;
+  color: white;
+  border-color: #333;
+}
+
+.control-btn {
+  padding: 10px;
+  border: none;
+  background: #e74c3c;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.control-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
+
+.control-btn.sample {
+  background: #3498db;
+}
+
+.control-btn.sample:hover {
+  background: #2980b9;
+}
+
+/* CENTER PANEL */
+.center {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.status-label {
+  background: white;
+  color: #333;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.viz-container {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+#vizCanvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.legend {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255,255,255,0.95);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-color {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+button {
+  padding: 14px 32px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#nextStep, #startViz {
+  background: black;
+  color: white;
+}
+
+#prevStep {
+  background: #555;
+  color: white;
+}
+
+#resetViz {
+  background: #e74c3c;
+  color: white;
+}
+
+.explanation-text {
+  background: white;
+  color: #333;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* RIGHT PANEL - Code */
+.code-panel {
+  background: #1e1e1e;
+  color: #dcdcdc;
+  padding: 20px;
+  padding-top: 50px;
+  border-radius: 12px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.code-panel div {
+  padding: 3px 6px;
+  border-radius: 3px;
+  transition: all 0.3s;
+}
+
+.highlight {
+  background: rgba(255, 215, 0, 0.25);
+  border-left: 3px solid #ffd700;
+  color: #fff;
+  padding-left: 10px;
+}
+
+.keyword { color: #569cd6; }
+.function { color: #dcdcaa; }
+.number { color: #b5cea8; }
+.comment { color: #6a9955; }
+
+.language-selector {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.lang-dropdown {
+  background: #2d2d2d;
+  color: #dcdcdc;
+  border: 1px solid #3d3d3d;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 120px;
+  outline: none;
+}
+
+.lang-dropdown:hover {
+  background: #3d3d3d;
+}
+
+.code-explanation {
+  background: #2d2d2d;
+  color: #dcdcdc;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-left: 3px solid #4facfe;
+}
+
+/* Modal for edge weight */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.modal-content input {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 150px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.modal-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.modal-btn.confirm {
+  background: #27ae60;
+  color: white;
+}
+
+.modal-btn.cancel {
+  background: #e74c3c;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL - Graph Builder -->
+<div class="builder">
+  <h2>🔨 Graph Builder</h2>
+  
+  <div class="rules">
+    <b>Kruskal's Algorithm:</b>
+    • Sort edges by weight<br>
+    • Pick smallest edge that doesn't form a cycle<br>
+    • Repeat until (V-1) edges chosen
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="graphCanvas"></canvas>
+  </div>
+
+  <div class="builder-controls">
+    <div class="mode-buttons">
+      <button class="mode-btn active" data-mode="vertex">Add Vertex</button>
+      <button class="mode-btn" data-mode="edge">Add Edge</button>
+    </div>
+    <button class="control-btn sample">Load Sample Graph</button>
+    <button class="control-btn">Clear Graph</button>
+  </div>
+</div>
+
+<!-- CENTER PANEL - Visualization -->
+<div class="center">
+  <div class="status-label" id="statusLabel">
+    Build your graph, then click "Start Visualization"
+  </div>
+
+  <div class="viz-container">
+    <canvas id="vizCanvas"></canvas>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #bbb;"></div>
+        <span>Unprocessed</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #f39c12;"></div>
+        <span>Considering</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #27ae60;"></div>
+        <span>MST Edge</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #e74c3c;"></div>
+        <span>Rejected (Cycle)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button id="prevStep" disabled>Previous Step</button>
+    <button id="nextStep" disabled>Next Step</button>
+    <button id="startViz">Start Visualization</button>
+    <button id="resetViz" style="display:none;">Reset</button>
+  </div>
+
+  <div class="explanation-text" id="explanationText">
+    Ready to visualize Kruskal's algorithm
+  </div>
+</div>
+
+<!-- RIGHT PANEL - Code -->
+<div class="code-panel" id="codePanel">
+  <div class="language-selector">
+    <select class="lang-dropdown" id="langSelect">
+      <option value="cpp">C++</option>
+      <option value="python">Python</option>
+      <option value="pseudo">Pseudocode</option>
+    </select>
+  </div>
+  <div id="codeContent"></div>
+  <div class="code-explanation" id="codeExplanation">
+    Build a graph to see the algorithm in action
+  </div>
+</div>
+
+<!-- Modal for edge weight input -->
+<div class="modal" id="weightModal">
+  <div class="modal-content">
+    <h3>Enter Edge Weight</h3>
+    <input type="number" id="weightInput" min="1" max="99" value="1">
+    <div class="modal-buttons">
+      <button class="modal-btn confirm" id="confirmWeight">OK</button>
+      <button class="modal-btn cancel" id="cancelWeight">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Code templates
+const CODE_TEMPLATES = {
+  cpp: [
+    'struct Edge {',
+    '    int u, v, weight;',
+    '};',
+    '',
+    'int parent[MAX_V];',
+    '',
+    'int find(int x) {',
+    '    if (parent[x] != x)',
+    '        parent[x] = find(parent[x]);',
+    '    return parent[x];',
+    '}',
+    '',
+    'void kruskal(vector<Edge>& edges, int V) {',
+    '    // Sort edges by weight',
+    '    sort(edges.begin(), edges.end(),',
+    '         [](Edge a, Edge b) { return a.weight < b.weight; });',
+    '    ',
+    '    // Initialize parent array',
+    '    for (int i = 0; i < V; i++)',
+    '        parent[i] = i;',
+    '    ',
+    '    vector<Edge> mst;',
+    '    ',
+    '    // Process each edge',
+    '    for (Edge& e : edges) {',
+    '        int rootU = find(e.u);',
+    '        int rootV = find(e.v);',
+    '        ',
+    '        // Check if edge forms cycle',
+    '        if (rootU != rootV) {',
+    '            // Add to MST',
+    '            mst.push_back(e);',
+    '            parent[rootU] = rootV;',
+    '            ',
+    '            if (mst.size() == V - 1)',
+    '                break;',
+    '        }',
+    '    }',
+    '}'
+  ],
+  python: [
+    'class UnionFind:',
+    '    def __init__(self, n):',
+    '        self.parent = list(range(n))',
+    '    ',
+    '    def find(self, x):',
+    '        if self.parent[x] != x:',
+    '            self.parent[x] = self.find(self.parent[x])',
+    '        return self.parent[x]',
+    '    ',
+    '    def union(self, x, y):',
+    '        self.parent[self.find(x)] = self.find(y)',
+    '',
+    'def kruskal(edges, num_vertices):',
+    '    # Sort edges by weight',
+    '    edges.sort(key=lambda e: e[2])',
+    '    ',
+    '    uf = UnionFind(num_vertices)',
+    '    mst = []',
+    '    ',
+    '    # Process each edge',
+    '    for u, v, weight in edges:',
+    '        # Check if edge forms cycle',
+    '        if uf.find(u) != uf.find(v):',
+    '            # Add to MST',
+    '            mst.append((u, v, weight))',
+    '            uf.union(u, v)',
+    '            ',
+    '            if len(mst) == num_vertices - 1:',
+    '                break',
+    '    ',
+    '    return mst'
+  ],
+  pseudo: [
+    'ALGORITHM Kruskal(Graph G):',
+    '    ',
+    '    // Sort all edges by weight',
+    '    edges ← SORT(G.edges by weight)',
+    '    ',
+    '    // Initialize disjoint sets',
+    '    FOR each vertex v IN G.vertices:',
+    '        MakeSet(v)',
+    '    END FOR',
+    '    ',
+    '    MST ← empty set',
+    '    ',
+    '    // Process edges in order',
+    '    FOR each edge (u,v,w) IN edges:',
+    '        ',
+    '        // Check if u and v are in different sets',
+    '        IF Find(u) ≠ Find(v) THEN:',
+    '            ',
+    '            // Add edge to MST',
+    '            MST.add((u,v,w))',
+    '            Union(u, v)',
+    '            ',
+    '            IF MST.size = |V| - 1 THEN:',
+    '                BREAK',
+    '            END IF',
+    '        END IF',
+    '    END FOR',
+    '    ',
+    '    RETURN MST',
+    'END ALGORITHM'
+  ]
+};
+
+const HIGHLIGHT_LINES = {
+  cpp: { sort: 14, init: 18, loop: 24, find: 25, check: 29, add: 31, union: 32 },
+  python: { sort: 14, init: 16, loop: 20, find: 22, check: 22, add: 24, union: 25 },
+  pseudo: { sort: 3, init: 6, loop: 12, find: 15, check: 15, add: 18, union: 19 }
+};
+
+// Graph Builder
+let nodes = [];
+let edges = [];
+let mode = 'vertex';
+let selectedNode = null;
+let nextNodeId = 0;
+let pendingEdge = null;
+
+const builderCanvas = document.getElementById('graphCanvas');
+const builderCtx = builderCanvas.getContext('2d');
+
+// Visualization
+const vizCanvas = document.getElementById('vizCanvas');
+const vizCtx = vizCanvas.getContext('2d');
+
+let sortedEdges = [];
+let currentStep = 0;
+let stepHistory = [];
+let uf = null;
+let mstEdges = [];
+let rejectedEdges = [];
+let isVisualizing = false;
+
+// UI Elements
+const statusLabel = document.getElementById('statusLabel');
+const explanationText = document.getElementById('explanationText');
+const codePanel = document.getElementById('codePanel');
+const codeContent = document.getElementById('codeContent');
+const codeExplanation = document.getElementById('codeExplanation');
+const langSelect = document.getElementById('langSelect');
+const nextBtn = document.getElementById('nextStep');
+const prevBtn = document.getElementById('prevStep');
+const startBtn = document.getElementById('startViz');
+const resetBtn = document.getElementById('resetViz');
+const weightModal = document.getElementById('weightModal');
+const weightInput = document.getElementById('weightInput');
+
+// Setup canvases
+function resizeCanvas(canvas) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+}
+
+resizeCanvas(builderCanvas);
+resizeCanvas(vizCanvas);
+
+window.addEventListener('resize', () => {
+  resizeCanvas(builderCanvas);
+  resizeCanvas(vizCanvas);
+  drawBuilder();
+  if (isVisualizing) drawVisualization();
+});
+
+// Mode selection
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    selectedNode = null;
+    pendingEdge = null;
+    drawBuilder();
+  });
+});
+
+// Clear graph
+document.querySelector('.control-btn:not(.sample)').addEventListener('click', () => {
+  nodes = [];
+  edges = [];
+  nextNodeId = 0;
+  selectedNode = null;
+  pendingEdge = null;
+  drawBuilder();
+});
+
+// Load sample graph
+document.querySelector('.control-btn.sample').addEventListener('click', () => {
+  nodes = [
+    { id: 0, x: 80, y: 80, label: 'A' },
+    { id: 1, x: 200, y: 50, label: 'B' },
+    { id: 2, x: 240, y: 180, label: 'C' },
+    { id: 3, x: 120, y: 220, label: 'D' },
+    { id: 4, x: 40, y: 180, label: 'E' }
+  ];
+  edges = [
+    { from: 0, to: 1, weight: 4 },
+    { from: 0, to: 4, weight: 1 },
+    { from: 1, to: 2, weight: 3 },
+    { from: 1, to: 3, weight: 5 },
+    { from: 2, to: 3, weight: 2 },
+    { from: 3, to: 4, weight: 6 },
+    { from: 0, to: 3, weight: 8 }
+  ];
+  nextNodeId = 5;
+  drawBuilder();
+});
+
+// Canvas click handler
+builderCanvas.addEventListener('click', (e) => {
+  const rect = builderCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (mode === 'vertex') {
+    const clickedNode = findNodeAt(x, y);
+    if (!clickedNode) {
+      const label = String.fromCharCode(65 + (nextNodeId % 26));
+      nodes.push({ id: nextNodeId++, x, y, label });
+      drawBuilder();
+    }
+  } else if (mode === 'edge') {
+    const clickedNode = findNodeAt(x, y);
+    if (clickedNode) {
+      if (!selectedNode) {
+        selectedNode = clickedNode;
+        drawBuilder();
+      } else if (selectedNode.id !== clickedNode.id) {
+        const existing = edges.find(e => 
+          (e.from === selectedNode.id && e.to === clickedNode.id) ||
+          (e.from === clickedNode.id && e.to === selectedNode.id)
+        );
+        if (!existing) {
+          pendingEdge = { from: selectedNode.id, to: clickedNode.id };
+          showWeightModal();
+        }
+        selectedNode = null;
+        drawBuilder();
+      }
+    }
+  }
+});
+
+function findNodeAt(x, y) {
+  return nodes.find(n => {
+    const dx = n.x - x;
+    const dy = n.y - y;
+    return Math.sqrt(dx * dx + dy * dy) < 20;
+  });
+}
+
+// Weight modal
+function showWeightModal() {
+  weightInput.value = 1;
+  weightModal.classList.add('show');
+  weightInput.focus();
+  weightInput.select();
+}
+
+document.getElementById('confirmWeight').addEventListener('click', () => {
+  const weight = parseInt(weightInput.value) || 1;
+  if (pendingEdge) {
+    edges.push({ ...pendingEdge, weight });
+    pendingEdge = null;
+  }
+  weightModal.classList.remove('show');
+  drawBuilder();
+});
+
+document.getElementById('cancelWeight').addEventListener('click', () => {
+  pendingEdge = null;
+  weightModal.classList.remove('show');
+});
+
+weightInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('confirmWeight').click();
+  }
+});
+
+// Draw builder canvas
+function drawBuilder() {
+  builderCtx.clearRect(0, 0, builderCanvas.width, builderCanvas.height);
+
+  // Draw edges
+  edges.forEach(edge => {
+    const fromNode = nodes.find(n => n.id === edge.from);
+    const toNode = nodes.find(n => n.id === edge.to);
+    if (fromNode && toNode) {
+      builderCtx.strokeStyle = '#999';
+      builderCtx.lineWidth = 2;
+      builderCtx.beginPath();
+      builderCtx.moveTo(fromNode.x, fromNode.y);
+      builderCtx.lineTo(toNode.x, toNode.y);
+      builderCtx.stroke();
+
+      // Draw weight
+      const mx = (fromNode.x + toNode.x) / 2;
+      const my = (fromNode.y + toNode.y) / 2;
+      builderCtx.fillStyle = 'white';
+      builderCtx.fillRect(mx - 15, my - 12, 30, 24);
+      builderCtx.fillStyle = '#333';
+      builderCtx.font = 'bold 14px Arial';
+      builderCtx.textAlign = 'center';
+      builderCtx.textBaseline = 'middle';
+      builderCtx.fillText(edge.weight, mx, my);
+    }
+  });
+
+  // Draw nodes
+  nodes.forEach(node => {
+    builderCtx.fillStyle = (selectedNode && selectedNode.id === node.id) ? '#3498db' : 'white';
+    builderCtx.strokeStyle = '#333';
+    builderCtx.lineWidth = 3;
+    builderCtx.beginPath();
+    builderCtx.arc(node.x, node.y, 20, 0, Math.PI * 2);
+    builderCtx.fill();
+    builderCtx.stroke();
+
+    builderCtx.fillStyle = '#333';
+    builderCtx.font = 'bold 16px Arial';
+    builderCtx.textAlign = 'center';
+    builderCtx.textBaseline = 'middle';
+    builderCtx.fillText(node.label, node.x, node.y);
+  });
+}
+
+// Union-Find
+class UnionFind {
+  constructor(n) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+  }
+
+  find(x) {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]);
+    }
+    return this.parent[x];
+  }
+
+  union(x, y) {
+    this.parent[this.find(x)] = this.find(y);
+  }
+
+  connected(x, y) {
+    return this.find(x) === this.find(y);
+  }
+}
+
+// Start visualization
+startBtn.addEventListener('click', () => {
+  if (nodes.length < 2) {
+    alert('Please add at least 2 vertices to the graph');
+    return;
+  }
+  if (edges.length === 0) {
+    alert('Please add at least 1 edge to the graph');
+    return;
+  }
+
+  isVisualizing = true;
+  sortedEdges = [...edges].sort((a, b) => a.weight - b.weight);
+  currentStep = 0;
+  stepHistory = [];
+  uf = new UnionFind(nodes.length);
+  mstEdges = [];
+  rejectedEdges = [];
+
+  startBtn.style.display = 'none';
+  resetBtn.style.display = 'inline-block';
+  nextBtn.disabled = false;
+  prevBtn.disabled = true;
+
+  statusLabel.textContent = '🚀 Starting Kruskal\'s Algorithm';
+  explanationText.textContent = `Sorted ${sortedEdges.length} edges by weight`;
+  
+  renderCode(HIGHLIGHT_LINES[langSelect.value].sort);
+  codeExplanation.textContent = `First, we sort all edges by weight in ascending order. This ensures we always consider the smallest available edge.`;
+  
+  drawVisualization();
+});
+
+// Reset visualization
+resetBtn.addEventListener('click', () => {
+  isVisualizing = false;
+  startBtn.style.display = 'inline-block';
+  resetBtn.style.display = 'none';
+  nextBtn.disabled = true;
+  prevBtn.disabled = true;
+  
+  statusLabel.textContent = 'Build your graph, then click "Start Visualization"';
+  explanationText.textContent = 'Ready to visualize Kruskal\'s algorithm';
+  
+  renderCode();
+  codeExplanation.textContent = 'Build a graph to see the algorithm in action';
+  
+  vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+});
+
+// Next step
+nextBtn.addEventListener('click', () => {
+  if (currentStep >= sortedEdges.length || mstEdges.length === nodes.length - 1) {
+    return;
+  }
+
+  saveState();
+  const edge = sortedEdges[currentStep];
+  const fromNode = nodes.find(n => n.id === edge.from);
+  const toNode = nodes.find(n => n.id === edge.to);
+
+  statusLabel.textContent = `Step ${currentStep + 1}: Considering edge (${fromNode.label}-${toNode.label}, weight ${edge.weight})`;
+
+  if (uf.connected(edge.from, edge.to)) {
+    rejectedEdges.push(edge);
+    explanationText.textContent = `Edge ${fromNode.label}-${toNode.label} rejected - would create a cycle`;
+    renderCode(HIGHLIGHT_LINES[langSelect.value].check);
+    codeExplanation.textContent = `Vertices ${fromNode.label} and ${toNode.label} are already connected. Adding this edge would form a cycle, so we reject it.`;
+  } else {
+    mstEdges.push(edge);
+    uf.union(edge.from, edge.to);
+    explanationText.textContent = `Edge ${fromNode.label}-${toNode.label} accepted - added to MST (${mstEdges.length}/${nodes.length - 1})`;
+    renderCode(HIGHLIGHT_LINES[langSelect.value].add);
+    codeExplanation.textContent = `Vertices ${fromNode.label} and ${toNode.label} are in different sets. We add this edge to the MST and union their sets.`;
+  }
+
+  currentStep++;
+  prevBtn.disabled = false;
+
+  if (mstEdges.length === nodes.length - 1) {
+    statusLabel.textContent = '✅ MST Complete!';
+    explanationText.textContent = `Minimum Spanning Tree found with total weight: ${mstEdges.reduce((sum, e) => sum + e.weight, 0)}`;
+    nextBtn.disabled = true;
+  }
+
+  drawVisualization();
+});
+
+// Previous step
+prevBtn.addEventListener('click', () => {
+  if (stepHistory.length === 0) return;
+
+  const state = stepHistory.pop();
+  currentStep = state.step;
+  mstEdges = state.mst;
+  rejectedEdges = state.rejected;
+  uf = state.uf;
+
+  statusLabel.textContent = state.status;
+  explanationText.textContent = state.explanation;
+  
+  nextBtn.disabled = false;
+  if (stepHistory.length === 0) {
+    prevBtn.disabled = true;
+  }
+
+  drawVisualization();
+  renderCode(state.codeLine);
+  codeExplanation.textContent = state.codeExp;
+});
+
+function saveState() {
+  stepHistory.push({
+    step: currentStep,
+    mst: [...mstEdges],
+    rejected: [...rejectedEdges],
+    uf: Object.assign(Object.create(Object.getPrototypeOf(uf)), uf),
+    status: statusLabel.textContent,
+    explanation: explanationText.textContent,
+    codeLine: null,
+    codeExp: codeExplanation.textContent
+  });
+}
+
+// Draw visualization
+function drawVisualization() {
+  vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+
+  // Scale graph to fit
+  const padding = 60;
+  const bounds = getGraphBounds();
+  const scaleX = (vizCanvas.width - 2 * padding) / (bounds.maxX - bounds.minX || 1);
+  const scaleY = (vizCanvas.height - 2 * padding) / (bounds.maxY - bounds.minY || 1);
+  const scale = Math.min(scaleX, scaleY, 1.5);
+
+  const offsetX = padding + (vizCanvas.width - 2 * padding - (bounds.maxX - bounds.minX) * scale) / 2;
+  const offsetY = padding + (vizCanvas.height - 2 * padding - (bounds.maxY - bounds.minY) * scale) / 2;
+
+  function transform(x, y) {
+    return {
+      x: (x - bounds.minX) * scale + offsetX,
+      y: (y - bounds.minY) * scale + offsetY
+    };
+  }
+
+  // Draw all edges
+  sortedEdges.forEach((edge, idx) => {
+    const fromNode = nodes.find(n => n.id === edge.from);
+    const toNode = nodes.find(n => n.id === edge.to);
+    const from = transform(fromNode.x, fromNode.y);
+    const to = transform(toNode.x, toNode.y);
+
+    let color = '#bbb';
+    let width = 2;
+
+    if (mstEdges.includes(edge)) {
+      color = '#27ae60';
+      width = 4;
+    } else if (rejectedEdges.includes(edge)) {
+      color = '#e74c3c';
+      width = 3;
+    } else if (idx === currentStep && isVisualizing) {
+      color = '#f39c12';
+      width = 4;
+    }
+
+    vizCtx.strokeStyle = color;
+    vizCtx.lineWidth = width;
+    vizCtx.beginPath();
+    vizCtx.moveTo(from.x, from.y);
+    vizCtx.lineTo(to.x, to.y);
+    vizCtx.stroke();
+
+    // Draw weight
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    vizCtx.fillStyle = 'white';
+    vizCtx.fillRect(mx - 15, my - 12, 30, 24);
+    vizCtx.fillStyle = color;
+    vizCtx.font = 'bold 14px Arial';
+    vizCtx.textAlign = 'center';
+    vizCtx.textBaseline = 'middle';
+    vizCtx.fillText(edge.weight, mx, my);
+  });
+
+  // Draw nodes
+  nodes.forEach(node => {
+    const pos = transform(node.x, node.y);
+    
+    vizCtx.fillStyle = 'white';
+    vizCtx.strokeStyle = '#333';
+    vizCtx.lineWidth = 3;
+    vizCtx.beginPath();
+    vizCtx.arc(pos.x, pos.y, 25, 0, Math.PI * 2);
+    vizCtx.fill();
+    vizCtx.stroke();
+
+    vizCtx.fillStyle = '#333';
+    vizCtx.font = 'bold 18px Arial';
+    vizCtx.textAlign = 'center';
+    vizCtx.textBaseline = 'middle';
+    vizCtx.fillText(node.label, pos.x, pos.y);
+  });
+}
+
+function getGraphBounds() {
+  if (nodes.length === 0) return { minX: 0, maxX: 1, minY: 0, maxY: 1 };
+  
+  const xs = nodes.map(n => n.x);
+  const ys = nodes.map(n => n.y);
+  return {
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys)
+  };
+}
+
+// Code rendering
+langSelect.addEventListener('change', () => {
+  renderCode();
+});
+
+function renderCode(highlightLine = null) {
+  const lang = langSelect.value;
+  const lines = CODE_TEMPLATES[lang];
+  const langSelector = document.querySelector('.language-selector');
+  
+  codeContent.innerHTML = lines.map((line, idx) => {
+    const isHighlight = highlightLine === idx;
+    return `<div class="${isHighlight ? 'highlight' : ''}">${line || '&nbsp;'}</div>`;
+  }).join('');
+  
+  codePanel.insertBefore(langSelector, codePanel.firstChild);
+}
+
+// Initialize
+renderCode();
+drawBuilder();
+</script>
+
+</body>
+</html>
