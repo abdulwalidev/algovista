@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Insertion Sort – Step by Step</title>
+<link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+<div class="explain">
+  <b>Insertion Sort</b><br><br>
+  • Take one element (key)<br>
+  • Compare it with elements on the left<br>
+  • Shift larger elements to the right<br>
+  • Insert the key in correct position<br>
+  • When all elements are moved to where they are supposed to be array is sorted ✅
+</div>
+
+<div class="center">
+  <div class="iteration-label" id="iterLabel">
+    Click "Next Step" to start
+  </div>
+
+  <div class="container" id="container">
+  </div>
+
+  <div class="buttons">
+    <button id="prevStep">Previous Step</button>
+    <button id="nextStep">Next Step</button>
+    <button id="newArray">New Array</button>
+  </div>
+
+  <div class="explanation-text" id="explanationText">
+    Ready to begin sorting
+  </div>
+</div>
+
+<div class="code" id="codeBlock">
+  <div class="language-selector">
+    <select class="lang-dropdown" id="langSelect">
+      <option value="cpp">C++</option>
+      <option value="python">Python</option>
+      <option value="pseudo">Pseudocode</option>
+    </select>
+  </div>
+</div>
+
+<script>
+const CODE_TEMPLATES = {
+  cpp: [
+    '#include <iostream>',
+    'using namespace std;',
+    '',
+    'int main() {',
+    '    int arr[] = {5, 3, 8, 4, 2};',
+    '    int n = 5;',
+    '',
+    '    for (int i = 1; i < n; i++) {',
+    '        int key = arr[i];',
+    '        int j = i - 1;',
+    '        while (j >= 0 && arr[j] > key) {',
+    '            arr[j + 1] = arr[j];',
+    '            j--;',
+    '        }',
+    '        arr[j + 1] = key;',
+    '    }',
+    '    return 0;',
+    '}'
+  ],
+  python: [
+    'def insertion_sort(arr):',
+    '    n = len(arr)',
+    '    for i in range(1, n):',
+    '        key = arr[i]',
+    '        j = i - 1',
+    '        while j >= 0 and arr[j] > key:',
+    '            arr[j + 1] = arr[j]',
+    '            j -= 1',
+    '        arr[j + 1] = key',
+    '',
+    'arr = [5, 3, 8, 4, 2]',
+    'insertion_sort(arr)'
+  ],
+  pseudo: [
+    'ALGORITHM InsertionSort(arr):',
+    '    n ← length of arr',
+    '',
+    '    FOR i FROM 1 TO n-1 DO:',
+    '        key ← arr[i]',
+    '        j ← i - 1',
+    '        WHILE j >= 0 AND arr[j] > key DO:',
+    '            arr[j+1] ← arr[j]',
+    '            j ← j - 1',
+    '        END WHILE',
+    '        arr[j+1] ← key',
+    '    END FOR',
+    'END ALGORITHM'
+  ]
+};
+
+const HIGHLIGHT_LINES = {
+  cpp: { outer: 7, key: 8, compare: 10, shift: 11, insert: 14 },
+  python: { outer: 2, key: 3, compare: 5, shift: 6, insert: 8 },
+  pseudo: { outer: 3, key: 4, compare: 6, shift: 7, insert: 10 }
+};
+
+let currentLanguage = 'cpp';
+let arr = [];
+let i = 1;
+let key = 0;
+let j = 0;
+let sorted = false;
+let phase = 'select';
+let history = [];
+
+const container = document.getElementById('container');
+const iterLabel = document.getElementById('iterLabel');
+const nextBtn = document.getElementById('nextStep');
+const prevBtn = document.getElementById('prevStep');
+const newBtn = document.getElementById('newArray');
+const codeBlock = document.getElementById('codeBlock');
+const langSelect = document.getElementById('langSelect');
+const explanationText = document.getElementById('explanationText');
+
+langSelect.addEventListener('change', (e) => {
+  currentLanguage = e.target.value;
+  renderCode();
+});
+
+function randomArray() {
+  const numbers = [];
+  const usedNumbers = new Set();
+  
+  while (numbers.length < 8) {
+    const num = 1 + Math.floor(Math.random() * 20);
+    if (!usedNumbers.has(num)) {
+      usedNumbers.add(num);
+      numbers.push(num);
+    }
+  }
+  
+  return numbers;
+}
+
+function renderArray() {
+  container.innerHTML = '';
+  
+  arr.forEach((value, index) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '↓';
+
+    const idx = document.createElement('div');
+    idx.className = 'index';
+    idx.textContent = index;
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.textContent = value;
+    bar.style.setProperty('--height', value * 12 + 'px');
+
+    if (sorted) {
+      bar.classList.add('sorted');
+    } else {
+      if (i < arr.length) {
+        bar.classList.add(`iter-${Math.min(i, 7)}`);
+      }
+
+      if (index < i) {
+        bar.classList.add('sorted');
+      }
+
+      if (phase === 'select' && index === i) {
+        bar.classList.add('comparing');
+        arrow.style.visibility = 'visible';
+      } else if ((phase === 'compare' || phase === 'shift') && (index === j || index === j + 1)) {
+        bar.classList.add('comparing');
+        arrow.style.visibility = 'visible';
+      }
+    }
+
+    item.append(arrow, idx, bar);
+    container.appendChild(item);
+  });
+  
+  if (!sorted && i > 0 && i < arr.length) {
+    const items = [...container.children].filter(child => child.classList.contains('item'));
+    const sortedStartIndex = i;
+    if (sortedStartIndex < items.length && sortedStartIndex > 0) {
+      const divider = document.createElement('div');
+      divider.className = 'sorted-divider';
+      divider.style.opacity = '0';
+      
+      const leftItem = items[sortedStartIndex - 1];
+      const rightItem = items[sortedStartIndex];
+      
+      container.appendChild(divider);
+      
+      setTimeout(() => {
+        const leftRect = leftItem.getBoundingClientRect();
+        const rightRect = rightItem.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        const dividerLeft = ((leftRect.right + rightRect.left) / 2) - containerRect.left;
+        divider.style.left = dividerLeft + 'px';
+        divider.style.opacity = '1';
+      }, 0);
+    }
+  }
+}
+
+function renderCode(highlightLine = null) {
+  const lines = CODE_TEMPLATES[currentLanguage];
+  const langSelector = document.querySelector('.language-selector');
+  codeBlock.innerHTML = lines.map((line, idx) => {
+    const isHighlight = highlightLine === idx;
+    return `<div class="${isHighlight ? 'highlight' : ''}">${line || '&nbsp;'}</div>`;
+  }).join('');
+  codeBlock.appendChild(langSelector);
+}
+
+function updateIterationLabel() {
+  if (sorted) {
+    iterLabel.textContent = '✅ Array is sorted!';
+    iterLabel.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    iterLabel.style.color = 'white';
+  } else {
+    iterLabel.textContent = `🔄 Pass ${i} - Inserting element at position ${i}`;
+    iterLabel.style.background = getIterationColor(Math.min(i, 7));
+    iterLabel.style.color = 'white';
+    iterLabel.classList.add('active');
+    setTimeout(() => iterLabel.classList.remove('active'), 500);
+  }
+}
+
+function getIterationColor(iterNum) {
+  const colors = [
+    'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+    'linear-gradient(135deg, #ff9f40 0%, #ff6b6b 100%)',
+    'linear-gradient(135deg, #ffce56 0%, #ff9f40 100%)',
+    'linear-gradient(135deg, #4bc0c0 0%, #36a2a2 100%)',
+    'linear-gradient(135deg, #9966ff 0%, #7b4fff 100%)',
+    'linear-gradient(135deg, #ff6384 0%, #ff4f7c 100%)',
+    'linear-gradient(135deg, #36a2eb 0%, #258dcf 100%)',
+    'linear-gradient(135deg, #ff9fef 0%, #e67be0 100%)'
+  ];
+  return colors[iterNum % colors.length];
+}
+
+function flipSwap(itemA, itemB, callback) {
+  const rectA = itemA.getBoundingClientRect();
+  const rectB = itemB.getBoundingClientRect();
+
+  container.insertBefore(itemB, itemA);
+
+  const rectA2 = itemA.getBoundingClientRect();
+  const rectB2 = itemB.getBoundingClientRect();
+
+  const dxA = rectA.left - rectA2.left;
+  const dxB = rectB.left - rectB2.left;
+
+  itemA.style.transform = `translateX(${dxA}px)`;
+  itemB.style.transform = `translateX(${dxB}px)`;
+
+  requestAnimationFrame(() => {
+    itemA.style.transition = 'transform 0.6s ease';
+    itemB.style.transition = 'transform 0.6s ease';
+    itemA.style.transform = '';
+    itemB.style.transform = '';
+  });
+
+  setTimeout(() => {
+    itemA.style.transition = '';
+    itemB.style.transition = '';
+    if (callback) callback();
+  }, 600);
+}
+
+function saveState() {
+  history.push({
+    arr: [...arr],
+    i: i,
+    key: key,
+    j: j,
+    sorted: sorted,
+    phase: phase,
+    iterLabelText: iterLabel.textContent,
+    iterLabelBg: iterLabel.style.background,
+    iterLabelColor: iterLabel.style.color,
+    explanationTextContent: explanationText.textContent
+  });
+}
+
+function reset() {
+  arr = randomArray();
+  i = 1;
+  key = 0;
+  j = 0;
+  sorted = false;
+  phase = 'select';
+  history = [];
+  nextBtn.disabled = false;
+  prevBtn.disabled = true;
+  iterLabel.textContent = 'Click "Next Step" to start';
+  iterLabel.style.background = 'white';
+  iterLabel.style.color = '#333';
+  explanationText.textContent = 'Ready to begin sorting';
+  renderArray();
+  renderCode();
+}
+
+nextBtn.addEventListener('click', () => {
+  if (sorted) return;
+
+  const lines = HIGHLIGHT_LINES[currentLanguage];
+
+  if (i >= arr.length) {
+    saveState();
+    sorted = true;
+    nextBtn.disabled = true;
+    iterLabel.textContent = '✅ Sorting Complete!';
+    iterLabel.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    iterLabel.style.color = 'white';
+    explanationText.textContent = 'All elements are now in order!';
+    renderArray();
+    renderCode();
+    prevBtn.disabled = false;
+    return;
+  }
+
+  if (phase === 'select') {
+    saveState();
+    key = arr[i];
+    j = i - 1;
+    phase = 'compare';
+    updateIterationLabel();
+    renderCode(lines.key);
+    explanationText.textContent = `Selected key = ${key} at position ${i}`;
+    renderArray();
+    prevBtn.disabled = false;
+  } else if (phase === 'compare') {
+    saveState();
+    if (j >= 0 && arr[j] > key) {
+      renderCode(lines.compare);
+      explanationText.textContent = `Comparing ${arr[j]} > ${key} — shifting ${arr[j]} right`;
+      phase = 'shift';
+      renderArray();
+    } else {
+      renderCode(lines.insert);
+      arr[j + 1] = key;
+      explanationText.textContent = `Inserted key ${key} at position ${j + 1}`;
+      i++;
+      phase = 'select';
+      renderArray();
+    }
+  } else if (phase === 'shift') {
+    saveState();
+    renderCode(lines.shift);
+    
+    const items = [...container.children].filter(child => child.classList.contains('item'));
+    const itemA = items[j];
+    const itemB = items[j + 1];
+    
+    nextBtn.disabled = true;
+    prevBtn.disabled = true;
+    
+    [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+    
+    flipSwap(itemA, itemB, () => {
+      nextBtn.disabled = false;
+      prevBtn.disabled = false;
+      j--;
+      phase = 'compare';
+    });
+  }
+});
+
+prevBtn.addEventListener('click', () => {
+  if (history.length === 0) return;
+  
+  const prevState = history.pop();
+  
+  arr = prevState.arr;
+  i = prevState.i;
+  key = prevState.key;
+  j = prevState.j;
+  sorted = prevState.sorted;
+  phase = prevState.phase;
+  
+  iterLabel.textContent = prevState.iterLabelText;
+  iterLabel.style.background = prevState.iterLabelBg;
+  iterLabel.style.color = prevState.iterLabelColor;
+  explanationText.textContent = prevState.explanationTextContent;
+  
+  nextBtn.disabled = false;
+  
+  if (history.length === 0) {
+    prevBtn.disabled = true;
+  }
+  
+  renderArray();
+  renderCode();
+});
+
+newBtn.addEventListener('click', reset);
+
+reset();
+</script>
+
+</body>
+</html>
