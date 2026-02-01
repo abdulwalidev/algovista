@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Linked List – Animated Add/Delete Head</title>
+<style>
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0f172a;
+  font-family: system-ui, sans-serif;
+}
+
+.container {
+  background: #020617;
+  padding: 24px 28px;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+  color: #e5e7eb;
+}
+
+.title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.controls {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+button {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  padding: 10px 18px;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+/* HEAD & NULL */
+.special {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #334155;
+  font-size: 13px;
+  color: #cbd5f5;
+  font-weight: 600;
+  margin: 4px;
+}
+
+/* NODE */
+.node {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transition: all 1s ease;
+  margin: 4px;
+}
+
+.node.temp {
+  position: absolute;
+  z-index: 5;
+  background: #022c22;
+}
+
+.node.removing {
+  opacity: 0;
+  transform: translateY(-50px);
+}
+
+.node .cross {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.data {
+  min-width: 70px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  font-weight: 600;
+  text-align: center;
+}
+
+.next {
+  min-width: 60px;
+  padding: 12px 14px;
+  background: #1e293b;
+  color: #cbd5f5;
+  font-size: 13px;
+  text-align: center;
+  border-left: 2px solid #0f172a;
+}
+
+.arrow {
+  margin: 0 14px;
+  font-size: 22px;
+  color: #94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="title">Singly Linked List</div>
+
+  <div class="controls">
+    <button onclick="addNewNodeAtStart()">Add New Node at Start</button>
+    <button onclick="animatedDelete()">Delete Head</button>
+  </div>
+
+  <div class="list" id="list">
+    <div class="special">HEAD</div>
+    <div class="arrow">→</div>
+
+    <div class="node" id="headNode">
+      <div class="data">10</div>
+      <div class="next">next</div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <div class="node">
+      <div class="data">20</div>
+      <div class="next">next</div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <div class="node">
+      <div class="data">30</div>
+      <div class="next">next</div>
+    </div>
+
+    <div class="arrow">→</div>
+    <div class="special">NULL</div>
+  </div>
+</div>
+
+<script>
+function animatedDelete() {
+  const list = document.getElementById('list');
+  const headNode = document.getElementById('headNode');
+  if (!headNode) return alert("No nodes left!");
+
+  const headValue = headNode.querySelector('.data').textContent;
+
+  const temp = document.createElement('div');
+  temp.className = 'node temp';
+  temp.innerHTML = `<div class="data">${headValue}</div><div class="next">next</div>`;
+  temp.style.top = '-60px';
+  temp.style.left = headNode.offsetLeft + 'px';
+  list.appendChild(temp);
+
+  setTimeout(() => {
+    headNode.classList.add('removing');
+  }, 1000);
+
+  setTimeout(() => {
+    headNode.remove();
+    temp.classList.remove('temp');
+    temp.style.position = 'static';
+    temp.id = 'headNode';
+  }, 2200);
+}
+
+function addNewNodeAtStart() {
+  const list = document.getElementById('list');
+  const oldHead = document.getElementById('headNode');
+  const value = prompt("Enter value for new node:");
+  if (!value) return;
+
+  // Create new node below current head
+  const newNode = document.createElement('div');
+  newNode.className = 'node temp';
+  newNode.innerHTML = `<div class="data">${value}</div><div class="next">next</div>`;
+  newNode.style.top = (oldHead ? oldHead.offsetTop + 60 : 0) + 'px';
+  newNode.style.left = (oldHead ? oldHead.offsetLeft : 0) + 'px';
+  list.insertBefore(newNode, oldHead ? oldHead.nextSibling : null);
+
+  // Animate moving new node up to head position
+  setTimeout(() => {
+    newNode.style.transition = 'all 1s ease';
+    newNode.style.top = (oldHead ? oldHead.offsetTop : 0) + 'px';
+    newNode.style.left = (oldHead ? oldHead.offsetLeft : 0) + 'px';
+  }, 100);
+
+  // Animate old head moving up and fading
+  if (oldHead) {
+    setTimeout(() => {
+      oldHead.classList.add('removing');
+    }, 1200);
+
+    setTimeout(() => {
+      oldHead.remove();
+      newNode.classList.remove('temp');
+      newNode.id = 'headNode';
+      newNode.style.position = 'static';
+    }, 2400);
+  } else {
+    // No old head
+    setTimeout(() => {
+      newNode.classList.remove('temp');
+      newNode.id = 'headNode';
+      newNode.style.position = 'static';
+    }, 1200);
+  }
+}
+</script>
+
+</body>
+</html>
