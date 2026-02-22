@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Linked List – Add at Head</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    background: #080d1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    color: #e2e8f0;
+    gap: 16px;
+    padding: 12px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    font-size: 0.8rem; letter-spacing: 0.16em;
+    color: #475569; text-transform: uppercase;
+    text-align: center;
+  }
+
+  #status {
+    font-size: 0.75rem; color: #38bdf8;
+    min-height: 1.4em; letter-spacing: 0.03em;
+    text-align: center; max-width: 95vw;
+    padding: 0 8px;
+    transition: opacity 0.2s ease;
+  }
+
+  /* ── SCENE WRAPPER: scales the fixed 780px canvas to fit screen ── */
+  #scene-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+  }
+
+  /* ── SCENE: fixed 780×200 canvas, scaled via JS transform ── */
+  #scene {
+    position: relative;
+    width: 780px;
+    height: 200px;
+    transform-origin: top center;
+    flex-shrink: 0;
+  }
+
+  /* SVG overlay */
+  #svg-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  /* ── NODE BLOCK ── */
+  .node-block {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    will-change: left, top, opacity;
+  }
+
+  .node {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.35s ease-in-out, box-shadow 0.35s ease-in-out;
+    flex-shrink: 0;
+  }
+  .node.hl-green  { border-color: #22c55e; box-shadow: 0 0 18px #22c55e55; }
+  .node.hl-yellow { border-color: #f59e0b; box-shadow: 0 0 18px #f59e0b55; }
+
+  .node .data {
+    min-width: 54px; padding: 11px 12px;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    font-weight: 700; font-size: 0.88rem;
+    text-align: center; color: #fff;
+  }
+  .node.new-node .data { background: linear-gradient(135deg, #065f46, #10b981); }
+
+  .node .nxt {
+    min-width: 44px; padding: 11px 7px;
+    background: #1e293b; color: #64748b;
+    font-size: 0.65rem; text-align: center;
+    border-left: 2px solid #0f172a;
+    transition: color 0.35s ease-in-out;
+  }
+  .node .nxt.lit { color: #22c55e; font-weight: 700; }
+
+  /* ── LABEL (HEAD / NULL) ── */
+  .lbl {
+    position: absolute;
+    padding: 9px 12px; background: #1e293b;
+    border: 1.5px solid #334155; border-radius: 8px;
+    font-size: 0.75rem; color: #94a3b8; font-weight: 700;
+    white-space: nowrap;
+    will-change: left;
+    transition: left 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  /* ── CONTROLS ── */
+  .input-row {
+    display: flex; gap: 8px; align-items: center;
+    flex-wrap: wrap; justify-content: center;
+  }
+  input[type=number] {
+    width: 80px; padding: 10px 10px;
+    background: #1e293b; border: 1.5px solid #334155;
+    border-radius: 8px; color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    text-align: center; outline: none;
+    
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type=number]:focus { border-color: #38bdf8; }
+  button {
+    padding: 10px 16px; border: none; border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    font-weight: 700; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+  #btnAdd   { background: linear-gradient(135deg, #059669, #065f46); color: #fff; }
+  #btnReset { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+
+  /* landscape hint on very small screens */
+  #landscape-hint {
+    display: none;
+    font-size: 0.68rem; color: #475569;
+    text-align: center; margin-top: -8px;
+  }
+  @media (max-width: 500px) and (orientation: portrait) {
+    #landscape-hint { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Linked List — Add at Head</h1>
+<div id="status">Enter a value and click Add</div>
+<div id="landscape-hint">↻ Rotate to landscape for best view</div>
+
+<div id="scene-wrapper">
+  <div id="scene">
+    <svg id="svg-overlay">
+      <defs>
+        <marker id="mh-normal" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+          <polygon points="0 0,9 3.5,0 7" fill="#475569"/>
+        </marker>
+        <marker id="mh-green" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+          <polygon points="0 0,9 3.5,0 7" fill="#22c55e"/>
+        </marker>
+        <marker id="mh-yellow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+          <polygon points="0 0,9 3.5,0 7" fill="#f59e0b"/>
+        </marker>
+      </defs>
+      <line id="svg-head-arrow" x1="0" y1="0" x2="0" y2="0"
+            stroke="#475569" stroke-width="2" marker-end="url(#mh-normal)"/>
+      <g id="svg-node-arrows"></g>
+      <path id="svg-curve" d="" fill="none" stroke="#22c55e"
+            stroke-width="2.5" stroke-dasharray="6 4"
+            marker-end="url(#mh-green)" opacity="0"
+            style="transition:opacity 0.45s ease-in-out"/>
+    </svg>
+
+    <div class="lbl" id="lbl-head">HEAD</div>
+    <div class="lbl" id="lbl-null">NULL</div>
+  </div>
+</div>
+
+<div class="input-row">
+  <input type="number" id="valInput" value="5" placeholder="val"/>
+  <button id="btnAdd" onclick="startAdd()">➕ Add at Head</button>
+  <button id="btnReset" onclick="resetList()">↺ Reset</button>
+</div>
+
+<script>
+// ── Layout constants (scene is always 780×200 internally) ──
+const SCENE_W  = 780;
+const NODE_W   = 102;
+const NODE_H   = 42;
+const ARROW_W  = 32;
+const HEAD_W   = 68;
+const NULL_W   = 54;
+const LIST_Y   = 130;
+const FLOAT_Y  = 24;
+
+let nodes = [10, 20, 30, 40, 50];
+let busy  = false;
+
+const wait  = ms => new Promise(r => setTimeout(r, ms));
+const scene = () => document.getElementById('scene');
+
+// ── Scale scene to fit viewport ────────────────────────────
+function scaleScene() {
+  const wrapper = document.getElementById('scene-wrapper');
+  const avail   = wrapper.clientWidth;
+  const scale   = Math.min(1, avail / SCENE_W);
+  const sc      = document.getElementById('scene');
+  sc.style.transform = `scale(${scale})`;
+  // shrink wrapper height to match scaled scene so layout doesn't leave a gap
+  wrapper.style.height = (200 * scale) + 'px';
+}
+scaleScene();
+window.addEventListener('resize', scaleScene);
+window.addEventListener('orientationchange', () => setTimeout(scaleScene, 150));
+
+// ── Status ──────────────────────────────────────────────────
+function setStatus(t) {
+  const el = document.getElementById('status');
+  el.style.opacity = '0';
+  setTimeout(() => { el.textContent = t; el.style.opacity = '1'; }, 200);
+}
+const setBtns = d => document.getElementById('btnAdd').disabled = d;
+
+// ── Compute x positions ─────────────────────────────────────
+function layout(nodeCount) {
+  const total    = HEAD_W + ARROW_W + nodeCount * (NODE_W + ARROW_W) + NULL_W;
+  const startX   = Math.max(0, (SCENE_W - total) / 2);
+  const headX    = startX;
+  const firstNX  = headX + HEAD_W + ARROW_W;
+  const nodeXs   = Array.from({length: nodeCount}, (_, i) => firstNX + i * (NODE_W + ARROW_W));
+  const nullX    = firstNX + nodeCount * (NODE_W + ARROW_W);
+  return { headX, nodeXs, nullX, firstNX };
+}
+
+// ── Build DOM ───────────────────────────────────────────────
+function buildDOM() {
+  scene().querySelectorAll('.node-block').forEach(e => e.remove());
+  const { headX, nodeXs, nullX } = layout(nodes.length);
+  const topY = LIST_Y - NODE_H / 2;
+
+  const lh = document.getElementById('lbl-head');
+  lh.style.transition = 'none';
+  lh.style.left = headX + 'px';
+  lh.style.top  = (LIST_Y - 18) + 'px';
+
+  const ln = document.getElementById('lbl-null');
+  ln.style.transition = 'none';
+  ln.style.left = nullX + 'px';
+  ln.style.top  = (LIST_Y - 18) + 'px';
+
+  nodes.forEach((val, i) => {
+    const block = document.createElement('div');
+    block.className = 'node-block';
+    block.id = 'block-' + i;
+    block.style.cssText = `left:${nodeXs[i]}px; top:${topY}px; width:${NODE_W}px;`;
+    block.innerHTML = `<div class="node" id="nd-${i}">
+      <div class="data">${val}</div>
+      <div class="nxt" id="nxt-${i}">next</div>
+    </div>`;
+    scene().appendChild(block);
+  });
+
+  drawStaticArrows();
+}
+
+// ── Static arrows ───────────────────────────────────────────
+function drawStaticArrows(headColor) {
+  const { headX, nodeXs, nullX } = layout(nodes.length);
+  const midY = LIST_Y;
+  const hArr = document.getElementById('svg-head-arrow');
+  hArr.setAttribute('x1', headX + HEAD_W + 2); hArr.setAttribute('y1', midY);
+  hArr.setAttribute('x2', nodeXs[0] - 2);      hArr.setAttribute('y2', midY);
+  hArr.setAttribute('stroke', headColor === 'green' ? '#22c55e' : '#475569');
+  hArr.setAttribute('marker-end', headColor === 'green' ? 'url(#mh-green)' : 'url(#mh-normal)');
+
+  const g = document.getElementById('svg-node-arrows');
+  g.innerHTML = '';
+  nodeXs.forEach((nx, i) => {
+    const x1 = nx + NODE_W + 2;
+    const x2 = i < nodeXs.length - 1 ? nodeXs[i+1] - 2 : nullX - 2;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', midY);
+    line.setAttribute('x2', x2); line.setAttribute('y2', midY);
+    line.setAttribute('stroke', '#475569');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('marker-end', 'url(#mh-normal)');
+    line.id = 'sarr-' + i;
+    g.appendChild(line);
+  });
+}
+
+// ── Helpers ─────────────────────────────────────────────────
+function getRect(el) {
+  const sr = scene().getBoundingClientRect();
+  const r  = el.getBoundingClientRect();
+  // account for CSS scale: divide by scale factor
+  const scale = parseFloat(scene().style.transform.replace('scale(','').replace(')','')) || 1;
+  return {
+    left:  (r.left  - sr.left) / scale,
+    top:   (r.top   - sr.top)  / scale,
+    right: (r.right - sr.left) / scale,
+    bottom:(r.bottom- sr.top)  / scale,
+    cx:    (r.left  - sr.left + r.width/2)  / scale,
+    cy:    (r.top   - sr.top  + r.height/2) / scale,
+    w: r.width / scale, h: r.height / scale
+  };
+}
+
+function hlNode(id, cls)      { document.getElementById(id)?.classList.add(cls); }
+function unhlNode(id, ...cls) { cls.forEach(c => document.getElementById(id)?.classList.remove(c)); }
+
+function showCurve(ax, ay, bx, by) {
+  const cpx = (ax + bx) / 2;
+  const cpy = Math.min(ay, by) - 50;
+  document.getElementById('svg-curve').setAttribute('d', `M ${ax} ${ay} Q ${cpx} ${cpy} ${bx} ${by}`);
+  document.getElementById('svg-curve').style.opacity = '1';
+}
+function hideCurve() { document.getElementById('svg-curve').style.opacity = '0'; }
+
+// ── MAIN ANIMATION ──────────────────────────────────────────
+async function startAdd() {
+  if (busy) return;
+  const val = parseInt(document.getElementById('valInput').value);
+  if (isNaN(val)) return alert('Enter a number');
+  busy = true; setBtns(true);
+
+  // Pre-calculate future layout
+  const futureNodes = [val, ...nodes];
+  const futureLayout = (() => {
+    const count   = futureNodes.length;
+    const total   = HEAD_W + ARROW_W + count * (NODE_W + ARROW_W) + NULL_W;
+    const startX  = Math.max(0, (SCENE_W - total) / 2);
+    const headX   = startX;
+    const firstNX = headX + HEAD_W + ARROW_W;
+    const nodeXs  = futureNodes.map((_, i) => firstNX + i * (NODE_W + ARROW_W));
+    const nullX   = firstNX + count * (NODE_W + ARROW_W);
+    return { headX, nodeXs, nullX };
+  })();
+
+  // ── STEP 1: floating node appears above ──
+  setStatus('Step 1: newNode(' + val + ') created');
+
+  const floatBlock = document.createElement('div');
+  floatBlock.className = 'node-block';
+  floatBlock.id = 'float-block';
+  floatBlock.style.cssText = `left:${futureLayout.nodeXs[0]}px; top:${FLOAT_Y - NODE_H/2}px; width:${NODE_W}px; opacity:0;`;
+  floatBlock.innerHTML = `<div class="node new-node" id="float-nd">
+    <div class="data">${val}</div>
+    <div class="nxt" id="float-nxt">next</div>
+  </div>`;
+  scene().appendChild(floatBlock);
+
+  floatBlock.getBoundingClientRect(); // reflow
+  floatBlock.style.transition = 'opacity 0.5s cubic-bezier(0.0, 0.0, 0.2, 1)';
+  floatBlock.style.opacity = '1';
+  hlNode('float-nd', 'hl-green');
+  await wait(800);
+
+  // ── STEP 2: newNode.next = head → curved arrow ──
+  setStatus('Step 2: newNode.next = head  (link new node → old head)');
+  document.getElementById('float-nxt').classList.add('lit');
+
+  const nxtR  = getRect(document.getElementById('float-nxt'));
+  const nd0El = document.getElementById('nd-0');
+  const nd0R  = nd0El ? getRect(nd0El) : null;
+
+  if (nd0R) {
+    hlNode('nd-0', 'hl-yellow');
+    showCurve(nxtR.right, nxtR.cy, nd0R.cx, nd0R.top);
+  }
+  await wait(1300);
+  hideCurve();
+  if (nd0El) unhlNode('nd-0', 'hl-yellow');
+  await wait(150);
+
+  // ── STEP 3: head = newNode → HEAD arrow tweens to float node ──
+  setStatus('Step 3: head = newNode  (HEAD now points to new node)');
+
+  const lh = document.getElementById('lbl-head');
+  lh.style.transition = 'left 0.52s cubic-bezier(0.4,0,0.2,1)';
+  lh.style.left = futureLayout.headX + 'px';
+
+  const hArr   = document.getElementById('svg-head-arrow');
+  hArr.setAttribute('stroke', '#22c55e');
+  hArr.setAttribute('marker-end', 'url(#mh-green)');
+  const oldX1  = parseFloat(hArr.getAttribute('x1'));
+  const oldX2  = parseFloat(hArr.getAttribute('x2'));
+  const newX1  = futureLayout.headX + HEAD_W + 2;
+  const newX2  = futureLayout.nodeXs[0] - 2;
+  const midY   = LIST_Y;
+
+  await new Promise(resolve => {
+    const start = performance.now(), dur = 520;
+    const ease  = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    (function frame(now) {
+      const t = Math.min((now - start) / dur, 1), e = ease(t);
+      hArr.setAttribute('x1', oldX1 + (newX1 - oldX1) * e);
+      hArr.setAttribute('y1', midY);
+      hArr.setAttribute('x2', oldX2 + (newX2 - oldX2) * e);
+      hArr.setAttribute('y2', midY);
+      t < 1 ? requestAnimationFrame(frame) : resolve();
+    })(performance.now());
+  });
+
+  // Draw diagonal HEAD → floating node arrow
+  const lhRect    = getRect(document.getElementById('lbl-head'));
+  const floatRect = getRect(document.getElementById('float-nd'));
+  hArr.setAttribute('x1', lhRect.right);
+  hArr.setAttribute('y1', lhRect.cy);
+  hArr.setAttribute('x2', floatRect.left - 2);
+  hArr.setAttribute('y2', floatRect.cy);
+  hlNode('float-nd', 'hl-green');
+  await wait(1000);
+
+  // ── STEP 4: nodes slide right, float slides down ──
+  setStatus('Step 4: Shifting nodes right, new node slides into position');
+
+  nodes.forEach((_, i) => {
+    const block = document.getElementById('block-' + i);
+    if (block) {
+      block.style.transition = `left 0.6s cubic-bezier(0.65,0,0.35,1) ${i * 18}ms`;
+      block.style.left = futureLayout.nodeXs[i + 1] + 'px';
+    }
+  });
+  const ln = document.getElementById('lbl-null');
+  ln.style.transition = `left 0.6s cubic-bezier(0.65,0,0.35,1) ${nodes.length * 18}ms`;
+  ln.style.left = futureLayout.nullX + 'px';
+
+  floatBlock.style.transition = 'top 0.65s cubic-bezier(0.34,1.2,0.64,1), left 0.65s cubic-bezier(0.65,0,0.35,1), opacity 0.3s ease';
+  floatBlock.style.top  = (LIST_Y - NODE_H/2) + 'px';
+  floatBlock.style.left = futureLayout.nodeXs[0] + 'px';
+
+  await wait(720);
+
+  // ── STEP 5: commit ──
+  nodes.unshift(val);
+  floatBlock.remove();
+  buildDOM();
+
+  hlNode('nd-0', 'hl-green');
+  await wait(650);
+  unhlNode('nd-0', 'hl-green');
+
+  setStatus('✅ Done!  ' + nodes.join(' → ') + ' → NULL');
+  document.getElementById('valInput').value = parseInt(document.getElementById('valInput').value) + 1;
+  busy = false; setBtns(false);
+}
+
+function resetList() {
+  if (busy) return;
+  nodes = [10, 20, 30, 40, 50];
+  document.getElementById('float-block')?.remove();
+  hideCurve();
+  buildDOM();
+  setStatus('List reset.');
+}
+
+buildDOM();
+</script>
+</body>
+</html>
