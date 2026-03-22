@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Quick Sort Visualizer</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #0a0a0a;
+  color: #fff;
+  min-height: 100vh;
+  padding: 12px;
+  padding-bottom: 90px;
+  overflow-x: hidden;
+}
+
+.header {
+  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 32px rgba(247, 151, 30, 0.35);
+}
+
+.header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; color: #1a1a1a; }
+.header p  { font-size: 12px; opacity: 0.8; line-height: 1.3; color: #1a1a1a; }
+
+.status-info {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.4;
+}
+
+.status-info .pass-info   { font-weight: 600; font-size: 14px; color: #ffd200; }
+.status-info .action-info { font-size: 12px; opacity: 0.9; }
+.status-info.active { animation: pulse 0.5s; }
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.02); }
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px 24px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 16px;
+  align-items: flex-end;
+  min-height: 220px;
+  margin-bottom: 10px;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 34px;
+}
+
+.arrow {
+  position: absolute;
+  top: -28px;
+  font-size: 18px;
+  font-weight: bold;
+  visibility: hidden;
+  animation: bounce 0.5s infinite;
+}
+
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+.index {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.bar {
+  width: 100%;
+  height: var(--height);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 6px;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  will-change: transform;
+  transition: all 0.3s;
+}
+
+.bar.pivot {
+  background: linear-gradient(180deg, #f7971e 0%, #ffd200 100%);
+  box-shadow: 0 0 22px rgba(255, 210, 0, 0.7);
+  color: #1a1a1a;
+}
+
+.bar.comparing {
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a6f 100%);
+  box-shadow: 0 0 20px rgba(255,107,107,0.6);
+}
+
+.bar.sorted {
+  background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 0 15px rgba(79,172,254,0.5);
+}
+
+.bar.inzone {
+  background: linear-gradient(180deg, #56ab2f 0%, #a8e063 100%);
+  box-shadow: 0 0 14px rgba(86,171,47,0.5);
+}
+
+.bar.dimmed { opacity: 0.2; }
+
+/* LEGEND */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.65); }
+
+.dot { width: 10px; height: 10px; border-radius: 3px; }
+.dot.pivot     { background: linear-gradient(135deg,#f7971e,#ffd200); }
+.dot.comparing { background: linear-gradient(135deg,#ff6b6b,#ee5a6f); }
+.dot.inzone    { background: linear-gradient(135deg,#56ab2f,#a8e063); }
+.dot.sorted    { background: linear-gradient(135deg,#4facfe,#00f2fe); }
+
+/* BUTTONS */
+.buttons {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(20px);
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  z-index: 100;
+}
+
+.reset-btn {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 36px; height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 8px;
+  color: #1a1a1a;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  padding: 18px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transform: translate(-50%,-50%);
+  transition: width 0.3s, height 0.3s;
+}
+button:active::before { width: 300px; height: 300px; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#prevStep {
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border-right: 0.5px solid rgba(255,255,255,0.1);
+}
+
+#nextStep {
+  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+  color: #1a1a1a;
+  border-left: 0.5px solid rgba(255,255,255,0.1);
+}
+
+/* CODE */
+.code-section {
+  background: rgba(255,255,255,0.03);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.code-header h3 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.chevron { transition: transform 0.3s; font-size: 18px; }
+.chevron.open { transform: rotate(180deg); }
+
+.lang-dropdown {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.code-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.code-content.open { max-height: 540px; overflow-y: auto; }
+
+.code {
+  background: #1a1a1a;
+  color: #dcdcdc;
+  padding: 14px;
+  border-radius: 10px;
+  font-family: 'SF Mono','Menlo','Monaco','Courier New',monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.code div { padding: 2px 0; border-radius: 3px; transition: all 0.2s; }
+
+.highlight {
+  background: rgba(255,215,0,0.15);
+  border-left: 2px solid #ffd700;
+  color: #fff;
+  padding-left: 8px;
+  margin-left: -8px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Quick Sort</h1>
+  <p>Pick pivot • Partition smaller/larger • Recurse on each half</p>
+  <button class="reset-btn" id="newArray">🔄</button>
+</div>
+
+<div class="status-info" id="statusInfo">
+  <div class="pass-info">Tap "Next" to begin</div>
+  <div class="action-info">Quick Sort • Divide &amp; Conquer</div>
+</div>
+
+<div class="container" id="container"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot pivot"></div> Pivot</div>
+  <div class="legend-item"><div class="dot comparing"></div> Scanning (j)</div>
+  <div class="legend-item"><div class="dot inzone"></div> &le; Pivot zone</div>
+  <div class="legend-item"><div class="dot sorted"></div> Final position</div>
+</div>
+
+<div class="code-section">
+  <div class="code-header" id="codeToggle">
+    <h3><span>💻</span><span>Code</span></h3>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <select class="lang-dropdown" id="langSelect" onclick="event.stopPropagation()">
+        <option value="cpp">C++</option>
+        <option value="python">Python</option>
+        <option value="pseudo">Pseudo</option>
+      </select>
+      <span class="chevron">▼</span>
+    </div>
+  </div>
+  <div class="code-content" id="codeContent">
+    <div class="code" id="codeBlock"></div>
+  </div>
+</div>
+
+<div class="buttons">
+  <button id="prevStep">&#8592; Prev</button>
+  <button id="nextStep">Next &#8594;</button>
+</div>
+
+<script>
+const CODE_TEMPLATES = {
+  cpp: [
+    'int partition(int arr[], int low, int high) {',
+    '    int pivot = arr[high];',
+    '    int i = low - 1;',
+    '    for (int j = low; j < high; j++) {',
+    '        if (arr[j] <= pivot) {',
+    '            i++;',
+    '            swap(arr[i], arr[j]);',
+    '        }',
+    '    }',
+    '    swap(arr[i+1], arr[high]);',
+    '    return i + 1;',
+    '}',
+    '',
+    'void quickSort(int arr[], int low, int high) {',
+    '    if (low < high) {',
+    '        int pi = partition(arr, low, high);',
+    '        quickSort(arr, low, pi - 1);',
+    '        quickSort(arr, pi + 1, high);',
+    '    }',
+    '}'
+  ],
+  python: [
+    'def partition(arr, low, high):',
+    '    pivot = arr[high]',
+    '    i = low - 1',
+    '    for j in range(low, high):',
+    '        if arr[j] <= pivot:',
+    '            i += 1',
+    '            arr[i], arr[j] = arr[j], arr[i]',
+    '    arr[i+1], arr[high] = arr[high], arr[i+1]',
+    '    return i + 1',
+    '',
+    'def quick_sort(arr, low, high):',
+    '    if low < high:',
+    '        pi = partition(arr, low, high)',
+    '        quick_sort(arr, low, pi - 1)',
+    '        quick_sort(arr, pi + 1, high)'
+  ],
+  pseudo: [
+    'ALGORITHM QuickSort(arr, low, high):',
+    '    IF low < high THEN:',
+    '        pi <- Partition(arr, low, high)',
+    '        QuickSort(arr, low, pi-1)',
+    '        QuickSort(arr, pi+1, high)',
+    '    END IF',
+    '',
+    'ALGORITHM Partition(arr, low, high):',
+    '    pivot <- arr[high]',
+    '    i <- low - 1',
+    '    FOR j FROM low TO high-1 DO:',
+    '        IF arr[j] <= pivot THEN:',
+    '            i <- i + 1',
+    '            SWAP arr[i] with arr[j]',
+    '        END IF',
+    '    END FOR',
+    '    SWAP arr[i+1] with arr[high]',
+    '    RETURN i + 1'
+  ]
+};
+
+const HIGHLIGHT_LINES = {
+  cpp:    { selectPivot: 1, compare: 4, swapSmall: 6, placePivot: 9,  recurse: 16 },
+  python: { selectPivot: 1, compare: 4, swapSmall: 6, placePivot: 7,  recurse: 13 },
+  pseudo: { selectPivot: 8, compare: 11,swapSmall:13, placePivot: 15, recurse: 3  }
+};
+
+let currentLanguage = 'cpp';
+let arr = [];
+let history = [];
+
+let state = {
+  stack: [],
+  low: 0, high: 0,
+  pivotVal: 0,
+  i: -1, j: 0,
+  phase: 'selectPivot',
+  sortedSet: new Set(),
+  sorted: false
+};
+
+const container   = document.getElementById('container');
+const statusInfo  = document.getElementById('statusInfo');
+const nextBtn     = document.getElementById('nextStep');
+const prevBtn     = document.getElementById('prevStep');
+const newBtn      = document.getElementById('newArray');
+const codeBlock   = document.getElementById('codeBlock');
+const langSelect  = document.getElementById('langSelect');
+const codeToggle  = document.getElementById('codeToggle');
+const codeContent = document.getElementById('codeContent');
+
+codeToggle.addEventListener('click', () => {
+  codeContent.classList.toggle('open');
+  document.querySelector('.chevron').classList.toggle('open');
+});
+
+langSelect.addEventListener('change', e => {
+  currentLanguage = e.target.value;
+  renderCode();
+});
+
+function randomArray() {
+  const nums = [], used = new Set();
+  while (nums.length < 8) {
+    const n = 1 + Math.floor(Math.random() * 20);
+    if (!used.has(n)) { used.add(n); nums.push(n); }
+  }
+  return nums;
+}
+
+function pushSubarray(low, high) {
+  if (low > high) return;
+  if (low === high) { state.sortedSet.add(low); return; }
+  state.stack.push({ low, high });
+}
+
+function checkDone() {
+  if (state.sortedSet.size >= arr.length) state.sorted = true;
+}
+
+function renderArray() {
+  container.innerHTML = '';
+  arr.forEach((value, index) => {
+    const item  = document.createElement('div');
+    item.className = 'item';
+    item.dataset.index = index;
+
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+
+    const idx = document.createElement('div');
+    idx.className = 'index';
+    idx.textContent = index;
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.textContent = value;
+    bar.style.setProperty('--height', value * 8 + 'px');
+
+    if (state.sorted || state.sortedSet.has(index)) {
+      bar.classList.add('sorted');
+    } else if (index < state.low || index > state.high) {
+      bar.classList.add('dimmed');
+    } else {
+      if (state.phase === 'placePivot') {
+        if (index === state.high || index === state.i + 1) {
+          bar.classList.add('comparing');
+          arrow.style.visibility = 'visible';
+          arrow.textContent = '&#8597;';
+          arrow.style.color = '#ff6b6b';
+        } else if (state.i >= state.low && index <= state.i) {
+          bar.classList.add('inzone');
+        }
+      } else {
+        if (index === state.high) {
+          bar.classList.add('pivot');
+          arrow.style.visibility = 'visible';
+          arrow.textContent = '\u2605';
+          arrow.style.color = '#ffd200';
+        } else if (state.phase === 'compare' && index === state.j) {
+          bar.classList.add('comparing');
+          arrow.style.visibility = 'visible';
+          arrow.textContent = '\u2193';
+          arrow.style.color = '#ff6b6b';
+        } else if (state.i >= state.low && index <= state.i) {
+          bar.classList.add('inzone');
+        }
+      }
+    }
+
+    item.append(arrow, idx, bar);
+    container.appendChild(item);
+  });
+}
+
+function renderCode(highlightLine = null) {
+  const lines = CODE_TEMPLATES[currentLanguage];
+  codeBlock.innerHTML = lines.map((line, idx) =>
+    `<div class="${highlightLine === idx ? 'highlight' : ''}">${line || '&nbsp;'}</div>`
+  ).join('');
+}
+
+function updateStatusInfo(passInfo, actionInfo) {
+  statusInfo.innerHTML = `<div class="pass-info">${passInfo}</div><div class="action-info">${actionInfo}</div>`;
+  statusInfo.classList.add('active');
+  setTimeout(() => statusInfo.classList.remove('active'), 500);
+}
+
+function flipSwap(iA, iB, cb) {
+  const items = [...container.children].filter(c => c.classList.contains('item'));
+  const a = items[iA], b = items[iB];
+  if (!a || !b) { if (cb) cb(); return; }
+
+  const rA = a.getBoundingClientRect(), rB = b.getBoundingClientRect();
+  if (iA < iB) container.insertBefore(b, a); else container.insertBefore(a, b);
+  const rA2 = a.getBoundingClientRect(), rB2 = b.getBoundingClientRect();
+
+  a.style.transform = `translateX(${rA.left - rA2.left}px)`;
+  b.style.transform = `translateX(${rB.left - rB2.left}px)`;
+
+  requestAnimationFrame(() => {
+    a.style.transition = b.style.transition = 'transform 0.45s ease';
+    a.style.transform  = b.style.transform  = '';
+  });
+  setTimeout(() => {
+    a.style.transition = b.style.transition = '';
+    if (cb) cb();
+  }, 450);
+}
+
+function saveState() {
+  history.push({
+    arr: [...arr],
+    state: { ...state, stack: state.stack.map(s => ({...s})), sortedSet: new Set(state.sortedSet) },
+    statusInfoHTML: statusInfo.innerHTML
+  });
+}
+
+function reset() {
+  arr = randomArray();
+  state = {
+    stack: [], low: 0, high: arr.length - 1,
+    pivotVal: arr[arr.length - 1],
+    i: -1, j: 0, phase: 'selectPivot',
+    sortedSet: new Set(), sorted: false
+  };
+  history = [];
+  nextBtn.disabled = false;
+  prevBtn.disabled = true;
+  statusInfo.innerHTML = '<div class="pass-info">Tap "Next" to begin</div><div class="action-info">Quick Sort &bull; Divide &amp; Conquer</div>';
+  renderArray();
+  renderCode();
+}
+
+nextBtn.addEventListener('click', () => {
+  if (state.sorted) return;
+  const L = HIGHLIGHT_LINES[currentLanguage];
+  saveState();
+
+  if (state.phase === 'selectPivot') {
+    state.i = state.low - 1;
+    state.j = state.low;
+    state.phase = 'compare';
+    updateStatusInfo(`Partition [${state.low}..${state.high}]`, `Pivot = arr[${state.high}] = ${state.pivotVal}  |  i starts at ${state.low - 1}`);
+    renderCode(L.selectPivot);
+    renderArray();
+
+  } else if (state.phase === 'compare') {
+    const jVal = arr[state.j], pVal = state.pivotVal;
+    if (jVal <= pVal) {
+      state.i++;
+      updateStatusInfo(`arr[${state.j}] = ${jVal} \u2264 pivot ${pVal}`, `Extend zone: i \u2192 ${state.i},  swap pos ${state.i} \u2194 ${state.j}`);
+      renderCode(L.swapSmall);
+      const iIdx = state.i, jIdx = state.j;
+      [arr[iIdx], arr[jIdx]] = [arr[jIdx], arr[iIdx]];
+      state.j++;
+      if (state.j >= state.high) state.phase = 'placePivot';
+      if (iIdx !== jIdx) {
+        nextBtn.disabled = prevBtn.disabled = true;
+        flipSwap(iIdx, jIdx, () => {
+          nextBtn.disabled = false;
+          prevBtn.disabled = history.length === 0;
+          renderArray();
+        });
+      } else { renderArray(); }
+    } else {
+      updateStatusInfo(`arr[${state.j}] = ${jVal} > pivot ${pVal}`, `Skip \u2014 stays in right partition`);
+      renderCode(L.compare);
+      state.j++;
+      if (state.j >= state.high) state.phase = 'placePivot';
+      renderArray();
+    }
+    prevBtn.disabled = history.length === 0;
+
+  } else if (state.phase === 'placePivot') {
+    const pIdx = state.i + 1, hIdx = state.high, low = state.low, high = state.high;
+    updateStatusInfo(`Place pivot ${state.pivotVal} \u2192 position ${pIdx}`, `Swap arr[${pIdx}] \u2194 arr[${hIdx}]  \u2713`);
+    renderCode(L.placePivot);
+    [arr[pIdx], arr[hIdx]] = [arr[hIdx], arr[pIdx]];
+    state.sortedSet.add(pIdx);
+    state.phase = 'afterPlace';
+
+    const doAfter = () => {
+      pushSubarray(low, pIdx - 1);
+      pushSubarray(pIdx + 1, high);
+      checkDone();
+      if (state.sorted) {
+        nextBtn.disabled = true;
+        updateStatusInfo('\u2705 Sorting Complete!', 'All elements in correct positions');
+        renderCode();
+      } else { nextBtn.disabled = false; }
+      prevBtn.disabled = false;
+      renderArray();
+    };
+
+    if (pIdx !== hIdx) {
+      nextBtn.disabled = prevBtn.disabled = true;
+      flipSwap(pIdx, hIdx, doAfter);
+    } else { doAfter(); }
+
+  } else if (state.phase === 'afterPlace') {
+    if (state.stack.length > 0) {
+      const { low, high } = state.stack.pop();
+      state.low = low; state.high = high;
+      state.pivotVal = arr[high];
+      state.i = low - 1; state.j = low;
+      state.phase = 'selectPivot';
+      updateStatusInfo(`New subarray [${low}..${high}]`, `Pivot = arr[${high}] = ${arr[high]}`);
+      renderCode(L.recurse);
+      renderArray();
+    } else {
+      state.sorted = true;
+      nextBtn.disabled = true;
+      updateStatusInfo('\u2705 Sorting Complete!', 'All elements in correct positions');
+      renderArray(); renderCode();
+    }
+    prevBtn.disabled = history.length === 0;
+  }
+});
+
+prevBtn.addEventListener('click', () => {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  arr   = prev.arr;
+  state = { ...prev.state, stack: prev.state.stack.map(s => ({...s})), sortedSet: new Set(prev.state.sortedSet) };
+  statusInfo.innerHTML = prev.statusInfoHTML;
+  nextBtn.disabled = false;
+  prevBtn.disabled = history.length === 0;
+  renderArray();
+  renderCode();
+});
+
+newBtn.addEventListener('click', reset);
+reset();
+</script>
+</body>
+</html>
