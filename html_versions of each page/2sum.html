@@ -149,3 +149,23 @@ nextBtn.onclick = () => {
 };
 
 >
+prevBtn.onclick = () => {
+  if (!history.length) return;
+  const prev = history.pop();
+  arr = prev.arr;
+  i = prev.i;
+  map = prev.map;
+  done = prev.done;
+  renderArray();
+  renderCode();
+  nextBtn.disabled = false;
+  if (!history.length) prevBtn.disabled = true;
+};
+
+document.getElementById('newArray').onclick = reset;
+
+reset();
+</script>
+
+</body>
+</html
