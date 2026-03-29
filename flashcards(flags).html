@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>x86 Flags & Jumps — Flashcards</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #1a1a18;
+    margin-bottom: 0.25rem;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #888780;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .card-wrap {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 520px;
+    height: 220px;
+    cursor: pointer;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.45s ease;
+  }
+
+  .card-wrap.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border: 1px solid #d3d1c7;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.75rem;
+    background: #ffffff;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+    background: #f1efe8;
+  }
+
+  .card-label {
+    font-size: 11px;
+    color: #b4b2a9;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+
+  .card-front-text {
+    font-size: 26px;
+    font-weight: 500;
+    color: #1a1a18;
+    text-align: center;
+    white-space: pre-line;
+    line-height: 1.4;
+  }
+
+  .card-back-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a18;
+    text-align: center;
+    white-space: pre-line;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: #5f5e5a;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #b4b2a9;
+    text-align: center;
+    margin-bottom: 1rem;
+    min-height: 18px;
+  }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .nav-btn, .shuffle-btn {
+    padding: 9px 18px;
+    background: #ffffff;
+    border: 1px solid #d3d1c7;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a18;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+
+  .nav-btn:hover:not(:disabled), .shuffle-btn:hover {
+    background: #f1efe8;
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .shuffle-btn {
+    font-size: 13px;
+    color: #5f5e5a;
+    padding: 9px 14px;
+  }
+
+  #counter {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    color: #888780;
+  }
+
+  .progress-bar {
+    width: 100%;
+    max-width: 520px;
+    height: 3px;
+    background: #d3d1c7;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #534AB7;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .category-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .badge-flag   { background: #EEEDFE; color: #3C3489; }
+  .badge-jump   { background: #E1F5EE; color: #085041; }
+  .badge-loop   { background: #FAECE7; color: #712B13; }
+  .badge-effect { background: #FAEEDA; color: #633806; }
+
+  @media (prefers-color-scheme: dark) {
+    body { background: #1c1c1a; color: #e0ddd5; }
+    h1 { color: #e0ddd5; }
+    .card-face { background: #2c2c2a; border-color: #444441; }
+    .card-back { background: #232321; }
+    .card-front-text, .card-back-text { color: #e0ddd5; }
+    .card-sub { color: #b4b2a9; }
+    .card-label { color: #5f5e5a; }
+    .nav-btn, .shuffle-btn { background: #2c2c2a; border-color: #444441; color: #e0ddd5; }
+    .nav-btn:hover:not(:disabled), .shuffle-btn:hover { background: #3a3a38; }
+    .progress-bar { background: #444441; }
+    .badge-flag   { background: #26215C; color: #CECBF6; }
+    .badge-jump   { background: #04342C; color: #9FE1CB; }
+    .badge-loop   { background: #4A1B0C; color: #F5C4B3; }
+    .badge-effect { background: #412402; color: #FAC775; }
+  }
+</style>
+</head>
+<body>
+
+<h1>x86 Flags &amp; Conditional Jumps</h1>
+<p class="subtitle">EFLAGS · Jcc · LOOP instructions</p>
+
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+<div class="card-wrap" id="card" onclick="flip()">
+  <div class="card-inner">
+    <div class="card-face card-front">
+      <div class="card-label" id="front-label">tap to reveal</div>
+      <span class="category-badge" id="badge"></span>
+      <div class="card-front-text" id="front-text"></div>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-label">answer</div>
+      <div class="card-back-text" id="back-text"></div>
+      <div class="card-sub" id="sub-text"></div>
+    </div>
+  </div>
+</div>
+
+<div class="hint" id="hint">tap card to flip · use arrow keys to navigate</div>
+
+<div class="nav-row">
+  <button class="nav-btn" id="prev-btn" onclick="go(-1)">&#8592; Prev</button>
+  <span id="counter"></span>
+  <button class="nav-btn" id="next-btn" onclick="go(1)">Next &#8594;</button>
+  <button class="shuffle-btn" onclick="shuffle()">&#8635; Shuffle</button>
+</div>
+
+<script>
+const cards = [
+  { cat: "flag",   front: "CF",                           back: "Carry Flag",           sub: "Set on unsigned overflow or borrow.\nChecked by JB, JAE, JA, JBE." },
+  { cat: "flag",   front: "ZF",                           back: "Zero Flag",             sub: "Set when result = 0.\nChecked by JE/JZ, JNE/JNZ, JA, JBE.\nAlso used by LOOPE/LOOPNE." },
+  { cat: "flag",   front: "SF",                           back: "Sign Flag",             sub: "Set when result is negative (MSB = 1).\nChecked by JS, JNS. Part of signed comparisons." },
+  { cat: "flag",   front: "OF",                           back: "Overflow Flag",         sub: "Set on signed overflow (result too large/small).\nChecked by JO, JNO. Used with SF for signed jumps." },
+  { cat: "flag",   front: "PF",                           back: "Parity Flag",           sub: "Set when low byte of result has an even number of 1-bits.\nChecked by JP/JPE, JNP/JPO." },
+  { cat: "flag",   front: "DF",                           back: "Direction Flag",        sub: "Controls string operation direction.\n0 = forward, 1 = backward.\nSet with STD, cleared with CLD." },
+  { cat: "jump",   front: "JA / JNBE",                   back: "CF = 0  and  ZF = 0",  sub: "Jump if above — unsigned.\nNo borrow, not equal." },
+  { cat: "jump",   front: "JAE / JNB",                   back: "CF = 0",                sub: "Jump if above or equal — unsigned.\nNo borrow." },
+  { cat: "jump",   front: "JB / JNAE",                   back: "CF = 1",                sub: "Jump if below — unsigned.\nBorrow occurred." },
+  { cat: "jump",   front: "JBE / JNA",                   back: "CF = 1  or  ZF = 1",   sub: "Jump if below or equal — unsigned." },
+  { cat: "jump",   front: "JE / JZ",                     back: "ZF = 1",                sub: "Jump if equal / zero.\nWorks for both signed and unsigned." },
+  { cat: "jump",   front: "JNE / JNZ",                   back: "ZF = 0",                sub: "Jump if not equal / not zero." },
+  { cat: "jump",   front: "JS",                          back: "SF = 1",                sub: "Jump if sign — result was negative." },
+  { cat: "jump",   front: "JNS",                         back: "SF = 0",                sub: "Jump if not sign — result was non-negative." },
+  { cat: "jump",   front: "JO",                          back: "OF = 1",                sub: "Jump if signed overflow occurred." },
+  { cat: "jump",   front: "JNO",                         back: "OF = 0",                sub: "Jump if no signed overflow." },
+  { cat: "jump",   front: "JP / JPE",                    back: "PF = 1",                sub: "Jump if parity even." },
+  { cat: "jump",   front: "JNP / JPO",                   back: "PF = 0",                sub: "Jump if parity odd." },
+  { cat: "loop",   front: "LOOP",                        back: "ECX = ECX − 1\nJump if ECX ≠ 0", sub: "ZF is completely ignored." },
+  { cat: "loop",   front: "LOOPE / LOOPZ",               back: "ECX = ECX − 1\nJump if ECX ≠ 0  and  ZF = 1", sub: "Loop while equal (after CMP)." },
+  { cat: "loop",   front: "LOOPNE / LOOPNZ",             back: "ECX = ECX − 1\nJump if ECX ≠ 0  and  ZF = 0", sub: "Loop while not equal." },
+  { cat: "effect", front: "INC / DEC\naffect CF?",       back: "No — CF is unchanged",  sub: "ZF, SF, and OF are all updated normally." },
+  { cat: "effect", front: "AND / OR / XOR\naffect CF and OF?", back: "Both cleared to 0", sub: "ZF and SF are updated based on result." },
+  { cat: "effect", front: "CMP",                         back: "Like SUB — result is discarded", sub: "Updates CF, ZF, SF, OF.\nUsed before conditional jumps." },
+  { cat: "effect", front: "A/B vs G/L\nin jump mnemonics", back: "A/B = unsigned (checks CF)\nG/L = signed (checks SF, OF)", sub: "E/Z = both signed and unsigned (checks ZF)." },
+];
+
+const badgeClass = { flag: "badge-flag", jump: "badge-jump", loop: "badge-loop", effect: "badge-effect" };
+const badgeLabel = { flag: "Flag", jump: "Conditional jump", loop: "Loop", effect: "Instruction effect" };
+
+let deck = [...cards];
+let idx = 0;
+
+function show() {
+  const c = deck[idx];
+  document.getElementById('front-text').textContent = c.front;
+  document.getElementById('back-text').textContent = c.back;
+  document.getElementById('sub-text').textContent = c.sub;
+  document.getElementById('counter').textContent = `${idx + 1} / ${deck.length}`;
+  document.getElementById('prev-btn').disabled = idx === 0;
+  document.getElementById('next-btn').disabled = idx === deck.length - 1;
+  document.getElementById('card').classList.remove('flipped');
+  document.getElementById('hint').textContent = 'tap card to flip · use arrow keys to navigate';
+
+  const badge = document.getElementById('badge');
+  badge.textContent = badgeLabel[c.cat];
+  badge.className = 'category-badge ' + badgeClass[c.cat];
+
+  const pct = ((idx + 1) / deck.length * 100).toFixed(1);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function flip() {
+  const card = document.getElementById('card');
+  card.classList.toggle('flipped');
+  document.getElementById('hint').textContent = card.classList.contains('flipped')
+    ? 'tap to flip back'
+    : 'tap card to flip · use arrow keys to navigate';
+}
+
+function go(dir) {
+  const next = idx + dir;
+  if (next < 0 || next >= deck.length) return;
+  idx = next;
+  show();
+}
+
+function shuffle() {
+  deck = [...cards].sort(() => Math.random() - 0.5);
+  idx = 0;
+  show();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') go(1);
+  else if (e.key === 'ArrowLeft') go(-1);
+  else if (e.key === ' ') { e.preventDefault(); flip(); }
+});
+
+show();
+</script>
+</body>
+</html>
