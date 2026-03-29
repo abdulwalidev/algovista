@@ -1,0 +1,156 @@
+
+<style>
+.card-wrap {
+  perspective: 1000px;
+  width: 100%; height: 200px;
+  cursor: pointer; margin-bottom: 1rem;
+}
+.card-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease;
+}
+.card-wrap.flipped .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden;
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 1.5rem; box-sizing: border-box;
+  background: var(--color-background-primary);
+}
+.card-back { transform: rotateY(180deg); background: var(--color-background-secondary); }
+.card-label {
+  font-size: 11px; color: var(--color-text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+.card-front-text {
+  font-size: 22px; font-weight: 500;
+  color: var(--color-text-primary); text-align: center;
+}
+.card-back-text {
+  font-size: 15px; color: var(--color-text-primary);
+  text-align: center; line-height: 1.6;
+}
+.card-sub {
+  font-size: 12px; color: var(--color-text-secondary);
+  margin-top: 8px; text-align: center;
+}
+.nav-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 4px;
+}
+.nav-btn {
+  padding: 8px 18px;
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  font-size: 14px; color: var(--color-text-primary);
+  cursor: pointer;
+}
+.nav-btn:hover { background: var(--color-background-secondary); }
+.nav-btn:disabled { opacity: 0.35; cursor: default; }
+#counter { font-size: 13px; color: var(--color-text-secondary); flex: 1; text-align: center; }
+#shuffle-btn {
+  padding: 8px 14px;
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  font-size: 13px; color: var(--color-text-secondary);
+  cursor: pointer;
+}
+#shuffle-btn:hover { background: var(--color-background-secondary); }
+#hint { font-size: 12px; color: var(--color-text-tertiary); text-align: center; margin-bottom: 6px; }
+</style>
+
+<div style="padding: 1rem 0;">
+  <div class="card-wrap" id="card" onclick="flip()">
+    <div class="card-inner">
+      <div class="card-face card-front">
+        <div class="card-label">tap to reveal</div>
+        <div class="card-front-text" id="front-text"></div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-label">answer</div>
+        <div class="card-back-text" id="back-text"></div>
+        <div class="card-sub" id="sub-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hint">tap card to flip</div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="prev-btn" onclick="go(-1)">&#8592; Prev</button>
+    <span id="counter"></span>
+    <button class="nav-btn" id="next-btn" onclick="go(1)">Next &#8594;</button>
+    <button id="shuffle-btn" onclick="shuffle()">Shuffle</button>
+  </div>
+</div>
+
+<script>
+const cards = [
+  { front: "CF", back: "Carry Flag", sub: "Set on unsigned overflow or borrow. Checked by JB, JAE, JA, JBE." },
+  { front: "ZF", back: "Zero Flag", sub: "Set when result = 0. Checked by JE/JZ, JNE/JNZ, JA, JBE. Also used by LOOPE/LOOPNE." },
+  { front: "SF", back: "Sign Flag", sub: "Set when result is negative (MSB = 1). Checked by JS, JNS. Part of signed comparisons." },
+  { front: "OF", back: "Overflow Flag", sub: "Set on signed overflow (result too large/small). Checked by JO, JNO. Used with SF for signed jumps." },
+  { front: "PF", back: "Parity Flag", sub: "Set when low byte of result has an even number of 1-bits. Checked by JP/JPE, JNP/JPO." },
+  { front: "DF", back: "Direction Flag", sub: "Controls string operation direction. 0 = forward, 1 = backward. Set with STD, cleared with CLD." },
+  { front: "JA / JNBE", back: "CF = 0  and  ZF = 0", sub: "Jump if above — unsigned. No borrow, not equal." },
+  { front: "JAE / JNB", back: "CF = 0", sub: "Jump if above or equal — unsigned. No borrow." },
+  { front: "JB / JNAE", back: "CF = 1", sub: "Jump if below — unsigned. Borrow occurred." },
+  { front: "JBE / JNA", back: "CF = 1  or  ZF = 1", sub: "Jump if below or equal — unsigned." },
+  { front: "JE / JZ", back: "ZF = 1", sub: "Jump if equal / zero. Works for both signed and unsigned." },
+  { front: "JNE / JNZ", back: "ZF = 0", sub: "Jump if not equal / not zero." },
+  { front: "JS", back: "SF = 1", sub: "Jump if sign — result was negative." },
+  { front: "JNS", back: "SF = 0", sub: "Jump if not sign — result was non-negative." },
+  { front: "JO", back: "OF = 1", sub: "Jump if signed overflow occurred." },
+  { front: "JNO", back: "OF = 0", sub: "Jump if no signed overflow." },
+  { front: "JP / JPE", back: "PF = 1", sub: "Jump if parity even." },
+  { front: "JNP / JPO", back: "PF = 0", sub: "Jump if parity odd." },
+  { front: "LOOP", back: "ECX = ECX − 1\nJump if ECX ≠ 0", sub: "ZF is completely ignored." },
+  { front: "LOOPE / LOOPZ", back: "ECX = ECX − 1\nJump if ECX ≠ 0  and  ZF = 1", sub: "Loop while equal (after CMP)." },
+  { front: "LOOPNE / LOOPNZ", back: "ECX = ECX − 1\nJump if ECX ≠ 0  and  ZF = 0", sub: "Loop while not equal." },
+  { front: "INC / DEC\naffect CF?", back: "No — CF is unchanged", sub: "ZF, SF, and OF are all updated normally." },
+  { front: "AND / OR / XOR\naffect CF and OF?", back: "Both cleared to 0", sub: "ZF and SF are updated based on result." },
+  { front: "CMP", back: "Like SUB — but result is discarded", sub: "Updates CF, ZF, SF, OF. Used before conditional jumps." },
+  { front: "A/B vs G/L\nin jump mnemonics", back: "A/B = unsigned (checks CF)\nG/L = signed (checks SF, OF)", sub: "E/Z = both signed and unsigned (checks ZF)." },
+];
+
+let deck = [...cards];
+let idx = 0;
+
+function show() {
+  const c = deck[idx];
+  document.getElementById('front-text').textContent = c.front;
+  document.getElementById('back-text').textContent = c.back;
+  document.getElementById('sub-text').textContent = c.sub;
+  document.getElementById('counter').textContent = `${idx + 1} / ${deck.length}`;
+  document.getElementById('prev-btn').disabled = idx === 0;
+  document.getElementById('next-btn').disabled = idx === deck.length - 1;
+  document.getElementById('card').classList.remove('flipped');
+  document.getElementById('hint').textContent = 'tap card to flip';
+}
+
+function flip() {
+  const card = document.getElementById('card');
+  card.classList.toggle('flipped');
+  document.getElementById('hint').textContent = card.classList.contains('flipped') ? 'tap to flip back' : 'tap card to flip';
+}
+
+function go(dir) {
+  idx = Math.max(0, Math.min(deck.length - 1, idx + dir));
+  show();
+}
+
+function shuffle() {
+  deck = [...cards].sort(() => Math.random() - 0.5);
+  idx = 0;
+  show();
+}
+
+show();
+</script>
