@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSC 395 — Assembly Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #13161d;
+  --surface2: #1a1e28;
+  --border: #252a38;
+  --accent: #5c6ef8;
+  --accent2: #38d9a9;
+  --accent3: #f7b731;
+  --accent4: #fc5c65;
+  --text: #e8eaf0;
+  --muted: #6b7280;
+  --code-bg: #090b0f;
+  --kw: #a78bfa;
+  --num: #fbbf24;
+  --cmt: #4ade80;
+  --lbl: #fb923c;
+  --str: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+aside {
+  width: 210px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+aside::-webkit-scrollbar { width: 3px; }
+aside::-webkit-scrollbar-thumb { background: var(--border); }
+
+.logo {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--accent2);
+  margin-bottom: 4px;
+}
+.logo-title {
+  font-size: 15px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #e8eaf0, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.nav-group { padding: 10px 0 4px; }
+.nav-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 14px 4px;
+}
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 14px;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s;
+}
+.nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-btn.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(92,110,248,0.08);
+}
+.nav-btn .dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.nav-btn.active .dot { background: var(--accent); }
+
+/* ── MAIN ── */
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+}
+main::-webkit-scrollbar { width: 4px; }
+main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.panel { display: none; animation: fadeIn 0.2s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(92,110,248,0.1);
+  border: 1px solid rgba(92,110,248,0.25);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+.panel-header h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.panel-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  margin-top: -10px;
+}
+
+/* ── CARDS ── */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.grid.one { grid-template-columns: 1fr; }
+.grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: rgba(92,110,248,0.3); }
+.card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* ── CODE ── */
+pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  line-height: 1.85;
+  overflow-x: auto;
+  margin-top: 6px;
+}
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--str);
+}
+.kw  { color: var(--kw); }
+.num { color: var(--num); }
+.cmt { color: var(--cmt); opacity: 0.7; }
+.lbl { color: var(--lbl); }
+.str { color: var(--str); }
+
+/* ── ROWS ── */
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12.5px;
+}
+.row:last-child { border-bottom: none; }
+.row code { min-width: 130px; flex-shrink: 0; }
+.row-desc { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+/* ── TABLE ── */
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+th { text-align: left; padding: 7px 10px; color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td:first-child { color: var(--kw); }
+
+/* ── BADGE ── */
+.badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-right: 5px;
+}
+.b-acc  { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+.b-base { background: rgba(56,217,169,0.12);  color: #38d9a9; border: 1px solid rgba(56,217,169,0.25); }
+.b-cnt  { background: rgba(247,183,49,0.12);  color: #f7b731; border: 1px solid rgba(247,183,49,0.25); }
+.b-dat  { background: rgba(252,92,101,0.12);  color: #fc5c65; border: 1px solid rgba(252,92,101,0.25); }
+
+/* ── TIP / WARN ── */
+.tip {
+  background: rgba(92,110,248,0.07);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 7px 7px 0;
+  padding: 9px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #a5b4fc;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+.warn {
+  background: rgba(247,183,49,0.07);
+  border-left: 3px solid var(--accent3);
+  border-radius: 0 7px 7px 0;
+  padding: 9px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #fde68a;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+/* ── INNER TABS ── */
+.tabs { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--muted);
+  background: var(--surface);
+  transition: all 0.12s;
+}
+.tab:hover { color: var(--text); border-color: var(--accent); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.itab-panel { display: none; }
+.itab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="logo">
+    <div class="logo-tag">CSC 395 · Saeed ur Rehman</div>
+    <div class="logo-title">x86 Assembly<br>Reference</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">// basics</div>
+    <button class="nav-btn active" onclick="show('vars',this)"><span class="dot"></span>Variables (.data)</button>
+    <button class="nav-btn" onclick="show('regs',this)"><span class="dot"></span>Registers</button>
+    <button class="nav-btn" onclick="show('datatypes',this)"><span class="dot"></span>Data Types & Sizes</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">// instructions</div>
+    <button class="nav-btn" onclick="show('mov',this)"><span class="dot"></span>MOV / MOVZX / MOVSX</button>
+    <button class="nav-btn" onclick="show('arith',this)"><span class="dot"></span>Arithmetic</button>
+    <button class="nav-btn" onclick="show('bool',this)"><span class="dot"></span>Boolean / Bitwise</button>
+    <button class="nav-btn" onclick="show('xchgneg',this)"><span class="dot"></span>XCHG / NEG</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">// control flow</div>
+    <button class="nav-btn" onclick="show('flags',this)"><span class="dot"></span>CPU Flags</button>
+    <button class="nav-btn" onclick="show('cmp',this)"><span class="dot"></span>CMP & Jumps</button>
+    <button class="nav-btn" onclick="show('loop',this)"><span class="dot"></span>LOOP</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">// memory</div>
+    <button class="nav-btn" onclick="show('addr',this)"><span class="dot"></span>Address Modes</button>
+    <button class="nav-btn" onclick="show('ops',this)"><span class="dot"></span>Operators & Directives</button>
+    <button class="nav-btn" onclick="show('arrays',this)"><span class="dot"></span>Arrays</button>
+    <button class="nav-btn" onclick="show('stack',this)"><span class="dot"></span>Stack / PUSH / POP</button>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">// templates</div>
+    <button class="nav-btn" onclick="show('modes',this)"><span class="dot"></span>0/1/2/3-Address</button>
+    <button class="nav-btn" onclick="show('skeleton',this)"><span class="dot"></span>Program Skeleton</button>
+    <button class="nav-btn" onclick="show('activities',this)"><span class="dot"></span>Class Activities</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main>
+
+<!-- ═══════════════ VARIABLES ═══════════════ -->
+<div class="panel active" id="p-vars">
+  <div class="panel-header">
+    <span class="panel-num">01</span><h1>Variables — .data section</h1>
+  </div>
+  <p class="panel-sub">// Every program starts here. Format: &nbsp; name &nbsp; TYPE &nbsp; value</p>
+  <div class="grid one">
+    <div class="card">
+      <div class="card-title">declaring variables</div>
+      <pre><span class="kw">section</span> .data
+a      <span class="kw">BYTE</span>    <span class="num">10</span>           <span class="cmt">; 8-bit unsigned = 10</span>
+b      <span class="kw">SBYTE</span>   <span class="num">-5</span>           <span class="cmt">; 8-bit signed   = -5</span>
+c      <span class="kw">WORD</span>    <span class="num">300</span>          <span class="cmt">; 16-bit</span>
+d      <span class="kw">DWORD</span>   <span class="num">70000</span>        <span class="cmt">; 32-bit</span>
+e      <span class="kw">QWORD</span>   <span class="num">0</span>            <span class="cmt">; 64-bit</span>
+msg    <span class="kw">BYTE</span>    <span class="str">"Hello"</span>,<span class="num">0</span>    <span class="cmt">; string (null-terminated)</span>
+arr    <span class="kw">WORD</span>    <span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>  <span class="cmt">; array of 5 words</span>
+buf    <span class="kw">BYTE</span>    <span class="num">10</span> <span class="kw">DUP</span>(<span class="num">0</span>)    <span class="cmt">; 10 bytes all zero</span>
+blank  <span class="kw">BYTE</span>    <span class="num">?</span>            <span class="cmt">; uninitialized</span>
+
+<span class="kw">section</span> .bss               <span class="cmt">; uninitialized / reserved space</span>
+result <span class="kw">RESD</span>    <span class="num">1</span>            <span class="cmt">; reserve 1 dword slot</span>
+buf2   <span class="kw">RESB</span>    <span class="num">64</span>           <span class="cmt">; reserve 64 bytes</span></pre>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">define keywords (.data)</div>
+      <div class="row"><code>BYTE / SBYTE</code><span class="row-desc">8 bits</span></div>
+      <div class="row"><code>WORD / SWORD</code><span class="row-desc">16 bits</span></div>
+      <div class="row"><code>DWORD / SDWORD</code><span class="row-desc">32 bits</span></div>
+      <div class="row"><code>FWORD</code><span class="row-desc">48 bits (far pointer)</span></div>
+      <div class="row"><code>QWORD</code><span class="row-desc">64 bits</span></div>
+      <div class="row"><code>TBYTE</code><span class="row-desc">80 bits (10 bytes)</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">reserve keywords (.bss)</div>
+      <div class="row"><code>RESB n</code><span class="row-desc">reserve n bytes</span></div>
+      <div class="row"><code>RESW n</code><span class="row-desc">reserve n words</span></div>
+      <div class="row"><code>RESD n</code><span class="row-desc">reserve n dwords</span></div>
+      <div class="row"><code>RESQ n</code><span class="row-desc">reserve n qwords</span></div>
+      <div class="row"><code>n DUP(0)</code><span class="row-desc">n copies of a value</span></div>
+      <div class="row"><code>n DUP(?)</code><span class="row-desc">n uninitialized</span></div>
+    </div>
+  </div>
+  <div class="tip">📌 .data = variables WITH a starting value. &nbsp; .bss = blank space you'll fill later (like int x; in C with no value).</div>
+</div>
+
+<!-- ═══════════════ REGISTERS ═══════════════ -->
+<div class="panel" id="p-regs">
+  <div class="panel-header">
+    <span class="panel-num">02</span><h1>Registers</h1>
+  </div>
+  <p class="panel-sub">// Think of registers as ultra-fast variables inside the CPU itself.</p>
+  <div class="grid one">
+    <div class="card">
+      <div class="card-title">register sizes — same physical register, different widths</div>
+      <pre><span class="cmt">; ┌──────────────── EAX  (32-bit) ─────────────────┐</span>
+<span class="cmt">; │                ┌──────── AX (16-bit) ──────────┐│</span>
+<span class="cmt">; │                │  AH (8-bit) │  AL (8-bit)     ││</span>
+<span class="cmt">; └────────────────┴─────────────┴─────────────────┘│</span>
+<span class="cmt">; Same pattern: EBX/BX/BH/BL  ECX/CX/CH/CL  EDX/DX/DH/DL</span></pre>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="badge b-acc">EAX</span> accumulator</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Default for arithmetic. MUL/DIV result stored here automatically. Used for I/O & interrupt calls.</p>
+      <pre><span class="kw">mov</span> eax, <span class="num">5</span>
+<span class="kw">add</span> eax, <span class="num">3</span>    <span class="cmt">; eax = 8</span>
+<span class="kw">mul</span> ebx      <span class="cmt">; eax = eax × ebx</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge b-base">EBX</span> base register</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Memory base pointer. Temp storage when EAX is busy. Used for memory access.</p>
+      <pre><span class="kw">mov</span> ebx, arr    <span class="cmt">; point to array</span>
+<span class="kw">mov</span> eax, [ebx]  <span class="cmt">; read value at *ebx</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge b-cnt">ECX</span> counter</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">LOOP auto-decrements ECX. CL holds shift amount for SHL/SHR.</p>
+      <pre><span class="kw">mov</span> ecx, <span class="num">5</span>     <span class="cmt">; loop 5 times</span>
+<span class="kw">shl</span> eax, <span class="kw">cl</span>   <span class="cmt">; shift by CL bits</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge b-dat">EDX</span> data register</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Holds HIGH 32 bits of MUL result. EDX:EAX together = 64-bit result.</p>
+      <pre><span class="cmt">; After MUL instruction:</span>
+<span class="cmt">; EDX = high 32 bits</span>
+<span class="cmt">; EAX = low  32 bits</span></pre>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">other registers</div>
+    <table>
+      <tr><th>Register</th><th>Name</th><th>Purpose</th></tr>
+      <tr><td>ESI / SI</td><td>Source Index</td><td>High-speed memory transfer (source pointer)</td></tr>
+      <tr><td>EDI / DI</td><td>Destination Index</td><td>High-speed memory transfer (destination pointer)</td></tr>
+      <tr><td>ESP / SP</td><td>Stack Pointer</td><td>Points to top of stack — do NOT use for arithmetic</td></tr>
+      <tr><td>EBP / BP</td><td>Frame Pointer</td><td>References function params and local vars on stack</td></tr>
+      <tr><td>EIP</td><td>Instruction Pointer</td><td>Address of the NEXT instruction to execute</td></tr>
+      <tr><td>EFLAGS</td><td>Flags Register</td><td>CF, ZF, SF, OF, PF — auto-set after arithmetic</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ DATA TYPES ═══════════════ -->
+<div class="panel" id="p-datatypes">
+  <div class="panel-header">
+    <span class="panel-num">03</span><h1>Data Types & Sizes</h1>
+  </div>
+  <p class="panel-sub">// How many bits each type uses + endianness (how bytes are stored in memory).</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">size table</div>
+      <table>
+        <tr><th>Type</th><th>Bits</th><th>Signed version</th></tr>
+        <tr><td>BYTE</td><td>8</td><td>SBYTE</td></tr>
+        <tr><td>WORD</td><td>16</td><td>SWORD</td></tr>
+        <tr><td>DWORD</td><td>32</td><td>SDWORD</td></tr>
+        <tr><td>FWORD</td><td>48</td><td>—</td></tr>
+        <tr><td>QWORD</td><td>64</td><td>—</td></tr>
+        <tr><td>TBYTE</td><td>80</td><td>—</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">endianness — x86 uses LITTLE endian</div>
+      <pre><span class="cmt">; Storing value: 0x0A0B0C0D</span>
+
+<span class="cmt">; Big Endian (IBM, Motorola, Sun):</span>
+addr+0:  <span class="num">0A</span>  <span class="cmt">← MSB first</span>
+addr+1:  <span class="num">0B</span>
+addr+2:  <span class="num">0C</span>
+addr+3:  <span class="num">0D</span>  <span class="cmt">← LSB last</span>
+
+<span class="cmt">; Little Endian (Intel x86, DEC):</span>
+addr+0:  <span class="num">0D</span>  <span class="cmt">← LSB first</span>
+addr+1:  <span class="num">0C</span>
+addr+2:  <span class="num">0B</span>
+addr+3:  <span class="num">0A</span>  <span class="cmt">← MSB last</span></pre>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">why endianness matters — PTR example</div>
+    <pre><span class="cmt">; myDouble DWORD 12345678h stored in memory (little endian):</span>
+<span class="cmt">; addr+0: 78  addr+1: 56  addr+2: 34  addr+3: 12</span>
+
+myDouble <span class="kw">DWORD</span> <span class="num">12345678h</span>
+<span class="kw">mov</span> ax, WORD PTR myDouble   <span class="cmt">; AX = 5678h  ← reads LOW order bytes first!</span>
+<span class="cmt">; NOT 1234h — because lowest address holds 78, 56</span></pre>
+  </div>
+  <div class="tip">📌 x86 = little endian. The SMALLEST (lowest) byte goes at the SMALLEST memory address. That's why WORD PTR gives you 5678h not 1234h.</div>
+</div>
+
+<!-- ═══════════════ MOV ═══════════════ -->
+<div class="panel" id="p-mov">
+  <div class="panel-header">
+    <span class="panel-num">04</span><h1>MOV / MOVZX / MOVSX</h1>
+  </div>
+  <p class="panel-sub">// MOV copies data. MOVZX and MOVSX extend a smaller value into a larger register.</p>
+  <div class="grid one">
+    <div class="card">
+      <div class="card-title">MOV — copy source → destination</div>
+      <pre><span class="kw">mov</span> eax, <span class="num">42</span>           <span class="cmt">; register ← immediate</span>
+<span class="kw">mov</span> eax, ebx          <span class="cmt">; register ← register</span>
+<span class="kw">mov</span> eax, [var]        <span class="cmt">; register ← memory</span>
+<span class="kw">mov</span> [var], eax        <span class="cmt">; memory   ← register</span>
+
+<span class="cmt">; ❌ mov [a], [b]   — two memory operands NOT allowed</span>
+<span class="cmt">; ❌ mov eax, al    — sizes must match</span>
+<span class="cmt">; ❌ mov al, 300    — value too big for 8-bit register</span></pre>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">MOVZX — zero extend (for unsigned)</div>
+      <pre><span class="cmt">; AL = 10001111b</span>
+<span class="kw">movzx</span> eax, al
+<span class="cmt">; EAX = 00000000 00000000 00000000 10001111</span>
+<span class="cmt">;       ←── fills with 0s ───────────────</span>
+
+<span class="kw">movzx</span> ax,  al    <span class="cmt">; byte  → word</span>
+<span class="kw">movzx</span> eax, al    <span class="cmt">; byte  → dword</span>
+<span class="kw">movzx</span> eax, ax    <span class="cmt">; word  → dword</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">MOVSX — sign extend (for signed)</div>
+      <pre><span class="cmt">; AL = 10001111b  (MSB=1 → negative)</span>
+<span class="kw">movsx</span> eax, al
+<span class="cmt">; EAX = 11111111 11111111 11111111 10001111</span>
+<span class="cmt">;       ←── fills with sign bit (1) ─────</span>
+
+<span class="kw">movsx</span> ax,  al    <span class="cmt">; byte  → word</span>
+<span class="kw">movsx</span> eax, al    <span class="cmt">; byte  → dword</span>
+<span class="kw">movsx</span> eax, bx    <span class="cmt">; EAX = FFFFA69Bh (if BX=A69Bh)</span></pre>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">workaround before MOVZX existed (manual zero-extend)</div>
+    <pre><span class="cmt">; Moving 16-bit "count" into 32-bit ECX:</span>
+count <span class="kw">WORD</span> <span class="num">1</span>
+<span class="kw">mov</span> ecx, <span class="num">0</span>     <span class="cmt">; clear top 16 bits</span>
+<span class="kw">mov</span> cx, count  <span class="cmt">; copy into low 16 bits</span></pre>
+  </div>
+  <div class="tip">📌 MOVZX = fill with 0s (unsigned numbers). MOVSX = fill with sign bit (signed numbers). When in doubt: if the number can be negative → use MOVSX.</div>
+</div>
+
+<!-- ═══════════════ ARITHMETIC ═══════════════ -->
+<div class="panel" id="p-arith">
+  <div class="panel-header">
+    <span class="panel-num">05</span><h1>Arithmetic Instructions</h1>
+  </div>
+  <p class="panel-sub">// ADD, SUB, MUL, DIV, INC, DEC — and shift instructions.</p>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">all arithmetic instructions</div>
+    <table>
+      <tr><th>Instruction</th><th>Syntax</th><th>Effect</th></tr>
+      <tr><td>ADD</td><td><code>add eax, src</code></td><td>eax = eax + src</td></tr>
+      <tr><td>SUB</td><td><code>sub eax, src</code></td><td>eax = eax − src</td></tr>
+      <tr><td>MUL</td><td><code>mul src</code></td><td>EDX:EAX = EAX × src (unsigned, no dest needed)</td></tr>
+      <tr><td>IMUL</td><td><code>imul eax, src</code></td><td>eax = eax × src (signed)</td></tr>
+      <tr><td>DIV</td><td><code>div src</code></td><td>EAX = EDX:EAX ÷ src &nbsp;|&nbsp; EDX = remainder</td></tr>
+      <tr><td>INC</td><td><code>inc eax</code></td><td>eax++ &nbsp;(does NOT change CF)</td></tr>
+      <tr><td>DEC</td><td><code>dec eax</code></td><td>eax-- &nbsp;(does NOT change CF)</td></tr>
+      <tr><td>NEG</td><td><code>neg eax</code></td><td>eax = −eax &nbsp;(two's complement)</td></tr>
+    </table>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">shift / rotate instructions (ECX / CL)</div>
+      <div class="row"><code>shl dst, cl</code><span class="row-desc">shift left  = multiply by 2ⁿ</span></div>
+      <div class="row"><code>shr dst, cl</code><span class="row-desc">shift right = divide by 2ⁿ (unsigned)</span></div>
+      <div class="row"><code>sar dst, cl</code><span class="row-desc">arithmetic shift right (preserves sign)</span></div>
+      <div class="row"><code>rol dst, cl</code><span class="row-desc">rotate left</span></div>
+      <div class="row"><code>ror dst, cl</code><span class="row-desc">rotate right</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">example — int x = (y + 4) × 3</div>
+      <pre><span class="kw">mov</span> eax, y    <span class="cmt">; eax = y</span>
+<span class="kw">add</span> eax, <span class="num">4</span>    <span class="cmt">; eax = y + 4</span>
+<span class="kw">mov</span> ebx, <span class="num">3</span>    <span class="cmt">; ebx = 3</span>
+<span class="kw">mul</span> ebx       <span class="cmt">; eax = (y+4) × 3</span>
+<span class="kw">mov</span> x, eax    <span class="cmt">; store result</span></pre>
+    </div>
+  </div>
+  <div class="warn">⚠ MUL always uses EAX automatically. You only specify the second operand. Result goes into EDX:EAX (EDX = overflow bits).</div>
+</div>
+
+<!-- ═══════════════ BOOLEAN ═══════════════ -->
+<div class="panel" id="p-bool">
+  <div class="panel-header">
+    <span class="panel-num">06</span><h1>Boolean / Bitwise Instructions</h1>
+  </div>
+  <p class="panel-sub">// AND, OR, XOR, NOT, TEST — for bit manipulation.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">AND — both bits must be 1</div>
+      <pre><span class="kw">and</span> al, 11110000b  <span class="cmt">; clear low 4 bits</span>
+<span class="kw">and</span> ax, 00FFh      <span class="cmt">; clear high byte of AX</span>
+<span class="cmt">; Clears OF and CF</span></pre>
+      <div class="tip">Mask with 0 to CLEAR bits.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">OR — either bit can be 1</div>
+      <pre><span class="kw">or</span> al, 00001111b   <span class="cmt">; set low 4 bits to 1</span>
+<span class="kw">or</span> al, 80h         <span class="cmt">; force bit 7 = 1</span>
+<span class="cmt">; Clears OF and CF</span></pre>
+      <div class="tip">Mask with 1 to SET bits.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">XOR — bits differ = 1</div>
+      <pre><span class="kw">xor</span> eax, eax       <span class="cmt">; fastest way to clear EAX = 0</span>
+<span class="kw">xor</span> al, key        <span class="cmt">; encrypt byte</span>
+<span class="kw">xor</span> al, key        <span class="cmt">; decrypt (XOR same key twice = original)</span></pre>
+      <div class="tip">XOR a value with itself = 0. XOR twice = original.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">NOT and TEST</div>
+      <pre><span class="kw">not</span> al             <span class="cmt">; flip ALL bits (no flags affected)</span>
+
+<span class="kw">test</span> al, 00001001b <span class="cmt">; check bits 0 and 3</span>
+<span class="cmt">; like AND but does NOT change AL</span>
+<span class="cmt">; only sets ZF, SF, PF</span></pre>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">practical tricks from lecture</div>
+    <pre><span class="cmt">; lowercase → uppercase (clear bit 5)</span>
+<span class="kw">and</span> al, 11011111b   <span class="cmt">; 'a'(61h) → 'A'(41h)</span>
+
+<span class="cmt">; uppercase → lowercase (set bit 5)</span>
+<span class="kw">or</span>  al, 00100000b   <span class="cmt">; 'A'(41h) → 'a'(61h)</span>
+
+<span class="cmt">; fastest register clear</span>
+<span class="kw">xor</span> eax, eax        <span class="cmt">; eax = 0 (faster than mov eax,0)</span>
+
+<span class="cmt">; test if bit 3 is set, jump if yes</span>
+<span class="kw">test</span> al, 00001000b
+<span class="kw">jnz</span>  <span class="lbl">bit3_set</span>       <span class="cmt">; ZF=0 means bit 3 = 1</span>
+
+<span class="cmt">; set intersection (AND) and union (OR)</span>
+<span class="kw">and</span> eax, SetY       <span class="cmt">; SetX ∩ SetY</span>
+<span class="kw">or</span>  eax, SetY       <span class="cmt">; SetX ∪ SetY</span>
+<span class="kw">not</span> eax             <span class="cmt">; complement of SetX</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════ XCHG / NEG ═══════════════ -->
+<div class="panel" id="p-xchgneg">
+  <div class="panel-header">
+    <span class="panel-num">07</span><h1>XCHG / NEG</h1>
+  </div>
+  <p class="panel-sub">// XCHG swaps two values. NEG negates (flips sign).</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">XCHG — exchange / swap</div>
+      <pre><span class="kw">xchg</span> ax, bx       <span class="cmt">; swap 16-bit regs</span>
+<span class="kw">xchg</span> ah, al       <span class="cmt">; swap 8-bit regs</span>
+<span class="kw">xchg</span> eax, ebx     <span class="cmt">; swap 32-bit regs</span>
+<span class="kw">xchg</span> var1, bx     <span class="cmt">; swap mem ↔ register</span>
+
+<span class="cmt">; XCHG reg, reg</span>
+<span class="cmt">; XCHG reg, mem</span>
+<span class="cmt">; XCHG mem, reg</span>
+<span class="cmt">; ❌ does NOT accept immediate values (unlike MOV)</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">NEG — negate (two's complement)</div>
+      <pre><span class="kw">mov</span> al, <span class="num">-1</span>
+<span class="kw">neg</span> al            <span class="cmt">; AL = 1  (+1)</span>
+
+<span class="kw">mov</span> al, <span class="num">127</span>
+<span class="kw">neg</span> al            <span class="cmt">; AL = -127</span>
+
+<span class="kw">neg</span> eax           <span class="cmt">; works on 32-bit too</span>
+<span class="kw">neg</span> [var]         <span class="cmt">; works on memory</span>
+
+<span class="cmt">; NEG reg</span>
+<span class="cmt">; NEG mem</span>
+<span class="cmt">; Applying NEG to non-zero always sets CF!</span></pre>
+    </div>
+  </div>
+  <div class="warn">⚠ NEG on -128 (10000000b) causes OF=1 because +128 doesn't fit in a signed byte (max is +127).</div>
+</div>
+
+<!-- ═══════════════ FLAGS ═══════════════ -->
+<div class="panel" id="p-flags">
+  <div class="panel-header">
+    <span class="panel-num">08</span><h1>CPU Flags (EFLAGS register)</h1>
+  </div>
+  <p class="panel-sub">// Automatically set/cleared after arithmetic. You check them with conditional jumps.</p>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">status flags</div>
+    <table>
+      <tr><th>Flag</th><th>Name</th><th>Set when...</th></tr>
+      <tr><td>CF</td><td>Carry Flag</td><td>Unsigned overflow — result too big for destination (carry out of MSB)</td></tr>
+      <tr><td>ZF</td><td>Zero Flag</td><td>Result = 0</td></tr>
+      <tr><td>SF</td><td>Sign Flag</td><td>Result is negative (MSB = 1)</td></tr>
+      <tr><td>OF</td><td>Overflow Flag</td><td>Signed overflow/underflow (e.g. 127 + 1 = -128)</td></tr>
+      <tr><td>PF</td><td>Parity Flag</td><td>Low byte of result has EVEN number of 1-bits</td></tr>
+      <tr><td>AF</td><td>Auxiliary Carry</td><td>Carry from bit 3 → bit 4 (used in BCD arithmetic)</td></tr>
+    </table>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">flag examples</div>
+      <pre><span class="kw">mov</span> al, <span class="num">0FFh</span>
+<span class="kw">add</span> al, <span class="num">1</span>       <span class="cmt">; AL=0,  CF=1, ZF=1</span>
+
+<span class="kw">mov</span> eax, <span class="num">4</span>
+<span class="kw">sub</span> eax, <span class="num">5</span>      <span class="cmt">; EAX=-1, SF=1</span>
+
+<span class="kw">mov</span> al, <span class="num">127</span>
+<span class="kw">add</span> al, <span class="num">1</span>       <span class="cmt">; AL=-128, OF=1 (signed overflow)</span>
+
+<span class="kw">mov</span> ecx, <span class="num">1</span>
+<span class="kw">sub</span> ecx, <span class="num">1</span>      <span class="cmt">; ECX=0, ZF=1</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">set / clear flags manually</div>
+      <pre><span class="kw">stc</span>             <span class="cmt">; SET   Carry Flag</span>
+<span class="kw">clc</span>             <span class="cmt">; CLEAR Carry Flag</span>
+
+<span class="kw">or</span>  al, <span class="num">80h</span>    <span class="cmt">; SET   Sign Flag  (set bit 7)</span>
+<span class="kw">and</span> al, <span class="num">7Fh</span>    <span class="cmt">; CLEAR Sign Flag  (clear bit 7)</span>
+
+<span class="kw">test</span> al, <span class="num">0</span>     <span class="cmt">; SET   Zero Flag</span>
+<span class="kw">or</span>   al, <span class="num">1</span>     <span class="cmt">; CLEAR Zero Flag</span>
+
+<span class="kw">mov</span>  al, <span class="num">7Fh</span>
+<span class="kw">inc</span>  al         <span class="cmt">; SET   Overflow Flag (127+1)</span>
+<span class="kw">or</span>   eax, <span class="num">0</span>    <span class="cmt">; CLEAR Overflow Flag</span></pre>
+    </div>
+  </div>
+  <div class="tip">📌 INC and DEC do NOT affect the Carry Flag. NEG on a non-zero value always SETS the Carry Flag.</div>
+</div>
+
+<!-- ═══════════════ CMP & JUMPS ═══════════════ -->
+<div class="panel" id="p-cmp">
+  <div class="panel-header">
+    <span class="panel-num">09</span><h1>CMP & Conditional Jumps</h1>
+  </div>
+  <p class="panel-sub">// CMP sets flags. Then a Jxx instruction checks those flags and jumps or not.</p>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">CMP — implied subtraction (sets flags, changes nothing)</div>
+    <pre><span class="kw">cmp</span> destination, source   <span class="cmt">; internally does: destination - source</span>
+<span class="kw">cmp</span> eax, <span class="num">10</span>              <span class="cmt">; sets CF, ZF, SF, OF based on eax-10</span>
+<span class="kw">cmp</span> ax, bx               <span class="cmt">; registers are NOT changed by CMP</span></pre>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">jump on flag value</div>
+      <div class="row"><code>JZ  / JE </code><span class="row-desc">ZF=1 (zero / equal)</span></div>
+      <div class="row"><code>JNZ / JNE</code><span class="row-desc">ZF=0 (not zero / not equal)</span></div>
+      <div class="row"><code>JC       </code><span class="row-desc">CF=1 (carry set)</span></div>
+      <div class="row"><code>JNC      </code><span class="row-desc">CF=0 (no carry)</span></div>
+      <div class="row"><code>JS       </code><span class="row-desc">SF=1 (negative result)</span></div>
+      <div class="row"><code>JNS      </code><span class="row-desc">SF=0 (positive result)</span></div>
+      <div class="row"><code>JO       </code><span class="row-desc">OF=1 (overflow)</span></div>
+      <div class="row"><code>JP       </code><span class="row-desc">PF=1 (even parity)</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">signed comparisons (after CMP)</div>
+      <div class="row"><code>JG / JNLE</code><span class="row-desc">greater (dst &gt; src)</span></div>
+      <div class="row"><code>JGE / JNL</code><span class="row-desc">greater or equal (≥)</span></div>
+      <div class="row"><code>JL / JNGE</code><span class="row-desc">less (dst &lt; src)</span></div>
+      <div class="row"><code>JLE / JNG</code><span class="row-desc">less or equal (≤)</span></div>
+      <br>
+      <div class="card-title" style="margin-top:4px">unsigned comparisons (after CMP)</div>
+      <div class="row"><code>JA / JNBE</code><span class="row-desc">above (dst &gt; src, unsigned)</span></div>
+      <div class="row"><code>JAE / JNB</code><span class="row-desc">above or equal</span></div>
+      <div class="row"><code>JB / JNAE</code><span class="row-desc">below (dst &lt; src, unsigned)</span></div>
+      <div class="row"><code>JBE / JNA</code><span class="row-desc">below or equal</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">equality jumps</div>
+      <div class="row"><code>JE       </code><span class="row-desc">equal (leftOp = rightOp)</span></div>
+      <div class="row"><code>JNE      </code><span class="row-desc">not equal (leftOp ≠ rightOp)</span></div>
+      <div class="row"><code>JCXZ     </code><span class="row-desc">jump if CX = 0</span></div>
+      <div class="row"><code>JECXZ    </code><span class="row-desc">jump if ECX = 0</span></div>
+      <div class="row"><code>JMP lbl  </code><span class="row-desc">unconditional (always jumps)</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CMP results — unsigned</div>
+      <table>
+        <tr><th>CMP result</th><th>ZF</th><th>CF</th></tr>
+        <tr><td>dst &lt; src</td><td>0</td><td>1</td></tr>
+        <tr><td>dst &gt; src</td><td>0</td><td>0</td></tr>
+        <tr><td>dst = src</td><td>1</td><td>0</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">if-else pattern in assembly</div>
+    <pre><span class="cmt">; if (eax == 10) { doA } else { doB }</span>
+    <span class="kw">cmp</span>  eax, <span class="num">10</span>
+    <span class="kw">jne</span>  <span class="lbl">else_block</span>    <span class="cmt">; jump if NOT equal</span>
+    <span class="cmt">; === IF block ===</span>
+    <span class="kw">jmp</span>  <span class="lbl">done</span>
+<span class="lbl">else_block:</span>
+    <span class="cmt">; === ELSE block ===</span>
+<span class="lbl">done:</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════ LOOP ═══════════════ -->
+<div class="panel" id="p-loop">
+  <div class="panel-header">
+    <span class="panel-num">10</span><h1>LOOP Instruction</h1>
+  </div>
+  <p class="panel-sub">// LOOP auto-decrements ECX and jumps back if ECX ≠ 0. Built-in for-loop counter.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">LOOP syntax</div>
+      <pre><span class="kw">mov</span> ecx, <span class="num">5</span>        <span class="cmt">; loop 5 times</span>
+<span class="lbl">myLoop:</span>
+    <span class="cmt">; body here runs 5 times</span>
+    <span class="kw">loop</span> <span class="lbl">myLoop</span>   <span class="cmt">; ECX-- ; if ECX≠0 → jump back</span>
+
+<span class="cmt">; What LOOP does each iteration:</span>
+<span class="cmt">; step 1: ECX = ECX - 1</span>
+<span class="cmt">; step 2: if ECX ≠ 0 → jump to label</span>
+<span class="cmt">; step 3: if ECX = 0 → fall through (exit loop)</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">LOOP variants</div>
+      <div class="row"><code>LOOP   lbl</code><span class="row-desc">jump if ECX ≠ 0</span></div>
+      <div class="row"><code>LOOPE  lbl</code><span class="row-desc">jump if ECX ≠ 0 AND ZF = 1</span></div>
+      <div class="row"><code>LOOPNE lbl</code><span class="row-desc">jump if ECX ≠ 0 AND ZF = 0</span></div>
+      <br>
+      <div class="card-title" style="margin-top:6px">manual loop with JMP</div>
+      <pre><span class="kw">mov</span> ecx, <span class="num">0</span>
+<span class="lbl">top:</span>
+    <span class="kw">cmp</span> ecx, <span class="num">5</span>
+    <span class="kw">jge</span> <span class="lbl">done</span>      <span class="cmt">; exit when ecx >= 5</span>
+    <span class="cmt">; body</span>
+    <span class="kw">inc</span> ecx
+    <span class="kw">jmp</span> <span class="lbl">top</span>
+<span class="lbl">done:</span></pre>
+    </div>
+  </div>
+  <div class="warn">⚠ If ECX = 0 before LOOP: it wraps to 4,294,967,295 and runs ~4 billion times! Always initialize ECX first.</div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">saving ECX inside a loop body</div>
+    <pre><span class="kw">mov</span> ecx, <span class="num">100</span>
+<span class="lbl">top:</span>
+    <span class="kw">mov</span> count, ecx    <span class="cmt">; save ECX before changing it</span>
+    <span class="kw">mov</span> ecx, <span class="num">20</span>       <span class="cmt">; inner use</span>
+    <span class="cmt">; ...do stuff...</span>
+    <span class="kw">mov</span> ecx, count    <span class="cmt">; restore ECX</span>
+    <span class="kw">loop</span> <span class="lbl">top</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════ ADDRESS MODES ═══════════════ -->
+<div class="panel" id="p-addr">
+  <div class="panel-header">
+    <span class="panel-num">11</span><h1>Addressing Modes</h1>
+  </div>
+  <p class="panel-sub">// 5 ways to specify where your data lives.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">1. immediate — value is inside the instruction</div>
+      <pre><span class="kw">mov</span> al, <span class="num">123</span>      <span class="cmt">; 123 IS the data, no memory needed</span>
+<span class="kw">add</span> eax, <span class="num">5</span>       <span class="cmt">; 5 is immediate</span>
+<span class="cmt">; fastest mode, no memory access required</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">2. direct — variable name (constant address)</div>
+      <pre><span class="kw">mov</span> al, var1      <span class="cmt">; CPU goes directly to var1's address</span>
+<span class="kw">mov</span> eax, [<span class="num">10400h</span>] <span class="cmt">; or raw hex address</span>
+<span class="cmt">; machine code encodes the full address</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">3. indirect — register holds the address (pointer)</div>
+      <pre><span class="kw">mov</span> esi, OFFSET byteVal
+<span class="kw">mov</span> al,  [esi]     <span class="cmt">; read from address in ESI</span>
+<span class="kw">mov</span> [esi], bl      <span class="cmt">; write to address in ESI</span>
+<span class="kw">inc</span> BYTE PTR [esi] <span class="cmt">; must specify size with PTR!</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">4. relative — PC + offset (used for jumps)</div>
+      <pre><span class="kw">jmp</span> <span class="num">4</span>             <span class="cmt">; PC = PC + 4</span>
+<span class="kw">jmp</span> <span class="lbl">myLabel</span>       <span class="cmt">; assembler calculates offset</span>
+<span class="cmt">; used for: switch, virtual functions,</span>
+<span class="cmt">; function pointers, dynamic libraries</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">5. displacement / index — base + constant offset</div>
+      <pre>arr <span class="kw">BYTE</span> <span class="num">10h</span>,<span class="num">20h</span>,<span class="num">30h</span>
+
+<span class="kw">mov</span> al, arr        <span class="cmt">; AL = 10h (element 0)</span>
+<span class="kw">mov</span> al, [arr+<span class="num">1</span>]    <span class="cmt">; AL = 20h (element 1)</span>
+<span class="kw">mov</span> al, [arr+<span class="num">2</span>]    <span class="cmt">; AL = 30h (element 2)</span>
+<span class="cmt">; arr+1 is called the "effective address"</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">GP fault warning</div>
+      <pre><span class="cmt">; ❌ If ESI is uninitialized:</span>
+<span class="kw">mov</span> ax, [esi]      <span class="cmt">; GENERAL PROTECTION FAULT!</span>
+
+<span class="cmt">; ✅ Always initialize before using as pointer:</span>
+<span class="kw">mov</span> esi, OFFSET byteVal
+<span class="kw">mov</span> al, [esi]      <span class="cmt">; safe</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ OPERATORS & DIRECTIVES ═══════════════ -->
+<div class="panel" id="p-ops">
+  <div class="panel-header">
+    <span class="panel-num">12</span><h1>Operators & Directives</h1>
+  </div>
+  <p class="panel-sub">// Not instructions — interpreted by the assembler at assembly time.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">OFFSET — address of a variable</div>
+      <pre><span class="kw">mov</span> esi, OFFSET bVal    <span class="cmt">; ESI = address of bVal</span>
+<span class="kw">mov</span> esi, OFFSET arr+<span class="num">4</span>  <span class="cmt">; address of 3rd WORD</span>
+
+<span class="cmt">; bVal  BYTE  ? → 00404000h</span>
+<span class="cmt">; wVal  WORD  ? → 00404001h</span>
+<span class="cmt">; dVal  DWORD ? → 00404003h</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">PTR — override declared size</div>
+      <pre>myDword <span class="kw">DWORD</span> <span class="num">12345678h</span>
+<span class="kw">mov</span> ax, WORD PTR myDword    <span class="cmt">; AX = 5678h</span>
+
+wordList <span class="kw">WORD</span> <span class="num">5678h</span>, <span class="num">1234h</span>
+<span class="kw">mov</span> eax, DWORD PTR wordList <span class="cmt">; EAX = 12345678h</span>
+
+<span class="kw">inc</span> BYTE PTR [esi]          <span class="cmt">; required: specify size</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">TYPE / LENGTHOF / SIZEOF</div>
+      <pre>arr <span class="kw">WORD</span> <span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>
+
+TYPE     arr   <span class="cmt">; = 2   bytes per element</span>
+LENGTHOF arr   <span class="cmt">; = 5   element count</span>
+SIZEOF   arr   <span class="cmt">; = 10  total bytes (TYPE × LENGTHOF)</span>
+
+intArray <span class="kw">WORD</span> <span class="num">32</span> <span class="kw">DUP</span>(<span class="num">0</span>)
+SIZEOF intArray <span class="cmt">; = 64  (32 × 2 bytes)</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">ALIGN / LABEL</div>
+      <pre><span class="kw">ALIGN</span> <span class="num">4</span>         <span class="cmt">; next var on 4-byte boundary (faster!)</span>
+<span class="kw">ALIGN</span> <span class="num">2</span>         <span class="cmt">; next var on even address</span>
+
+val16 <span class="kw">LABEL</span> WORD     <span class="cmt">; alias for val32 (no storage allocated)</span>
+val32 <span class="kw">DWORD</span> <span class="num">12345678h</span>
+<span class="kw">mov</span> ax, val16        <span class="cmt">; AX = 5678h (low word)</span>
+<span class="kw">mov</span> dx, [val16+<span class="num">2</span>]    <span class="cmt">; DX = 1234h (high word)</span></pre>
+    </div>
+  </div>
+  <div class="tip">📌 MASM has NO range checking on effective addresses. mov al, [arrayB+999] won't crash at assembly — it silently reads outside your array!</div>
+</div>
+
+<!-- ═══════════════ ARRAYS ═══════════════ -->
+<div class="panel" id="p-arrays">
+  <div class="panel-header">
+    <span class="panel-num">13</span><h1>Arrays</h1>
+  </div>
+  <p class="panel-sub">// Stepping through arrays using indirect and displacement addressing.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">BYTE array — step by 1</div>
+      <pre>arrayB <span class="kw">BYTE</span> <span class="num">10h</span>, <span class="num">20h</span>, <span class="num">30h</span>
+
+<span class="kw">mov</span> esi, OFFSET arrayB
+<span class="kw">mov</span> al, [esi]     <span class="cmt">; AL = 10h</span>
+<span class="kw">inc</span> esi
+<span class="kw">mov</span> al, [esi]     <span class="cmt">; AL = 20h</span>
+<span class="kw">inc</span> esi
+<span class="kw">mov</span> al, [esi]     <span class="cmt">; AL = 30h</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">WORD array — step by 2</div>
+      <pre>arrayW <span class="kw">WORD</span> <span class="num">1000h</span>, <span class="num">2000h</span>, <span class="num">3000h</span>
+
+<span class="kw">mov</span> esi, OFFSET arrayW
+<span class="kw">mov</span> ax, [esi]     <span class="cmt">; AX = 1000h</span>
+<span class="kw">add</span> esi, <span class="num">2</span>
+<span class="kw">mov</span> ax, [esi]     <span class="cmt">; AX = 2000h</span>
+<span class="kw">add</span> esi, <span class="num">2</span>
+<span class="kw">mov</span> ax, [esi]     <span class="cmt">; AX = 3000h</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">DWORD array — step by 4</div>
+      <pre>arrayD <span class="kw">DWORD</span> <span class="num">10000h</span>, <span class="num">20000h</span>, <span class="num">30000h</span>
+
+<span class="kw">mov</span> esi, OFFSET arrayD
+<span class="kw">mov</span> eax, [esi]    <span class="cmt">; EAX = 10000h</span>
+<span class="kw">add</span> esi, <span class="num">4</span>
+<span class="kw">mov</span> eax, [esi]    <span class="cmt">; EAX = 20000h</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">displacement (index) access</div>
+      <pre>arrayB <span class="kw">BYTE</span> <span class="num">10h</span>,<span class="num">20h</span>,<span class="num">30h</span>,<span class="num">40h</span>,<span class="num">50h</span>
+
+<span class="kw">mov</span> al, arrayB      <span class="cmt">; AL = 10h (index 0)</span>
+<span class="kw">mov</span> al, [arrayB+<span class="num">1</span>]  <span class="cmt">; AL = 20h (index 1)</span>
+<span class="kw">mov</span> al, [arrayB+<span class="num">2</span>]  <span class="cmt">; AL = 30h (index 2)</span>
+<span class="cmt">; arrayB+1 = "effective address"</span></pre>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">sum array with loop (lecture example)</div>
+    <pre>intarray <span class="kw">DWORD</span> <span class="num">10000h</span>,<span class="num">20000h</span>,<span class="num">30000h</span>,<span class="num">40000h</span>
+
+<span class="kw">mov</span> edi, OFFSET intarray      <span class="cmt">; 1. pointer to array</span>
+<span class="kw">mov</span> ecx, LENGTHOF intarray    <span class="cmt">; 2. ECX = 4 (element count)</span>
+<span class="kw">mov</span> eax, <span class="num">0</span>                    <span class="cmt">; 3. sum = 0</span>
+<span class="lbl">L1:</span>
+    <span class="kw">add</span> eax, [edi]             <span class="cmt">; 4. sum += *edi</span>
+    <span class="kw">add</span> edi, TYPE intarray     <span class="cmt">; 5. edi += 4 (next element)</span>
+    <span class="kw">loop</span> <span class="lbl">L1</span>                   <span class="cmt">; 6. ECX-- ; repeat</span></pre>
+  </div>
+  <div class="tip">📌 Use TYPE intarray to advance the pointer — it automatically gives the right step size (1 for BYTE, 2 for WORD, 4 for DWORD).</div>
+</div>
+
+<!-- ═══════════════ STACK ═══════════════ -->
+<div class="panel" id="p-stack">
+  <div class="panel-header">
+    <span class="panel-num">14</span><h1>Stack / PUSH / POP</h1>
+  </div>
+  <p class="panel-sub">// Stack grows DOWNWARD in memory. LIFO — last pushed = first popped.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">PUSH and POP</div>
+      <pre><span class="kw">push</span> eax       <span class="cmt">; ESP -= 4; [ESP] = EAX</span>
+<span class="kw">push</span> <span class="num">42</span>        <span class="cmt">; push an immediate value</span>
+<span class="kw">pop</span>  eax       <span class="cmt">; EAX = [ESP]; ESP += 4</span>
+<span class="kw">pop</span>  ebx       <span class="cmt">; pop into a different register</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title">CALL and RET</div>
+      <pre><span class="kw">call</span> myFunc    <span class="cmt">; pushes return addr, jumps to myFunc</span>
+<span class="kw">ret</span>            <span class="cmt">; pops return addr, jumps back</span>
+
+<span class="cmt">; Standard function frame:</span>
+<span class="kw">push</span> ebp
+<span class="kw">mov</span>  ebp, esp  <span class="cmt">; set up stack frame</span>
+<span class="cmt">; ... function body ...</span>
+<span class="kw">pop</span>  ebp
+<span class="kw">ret</span></pre>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">visual — stack memory (grows downward)</div>
+    <pre><span class="cmt">; Higher memory address ─────────────── bottom of stack</span>
+<span class="cmt">;   [ old data                                         ]</span>
+<span class="cmt">;   [ value pushed first                               ]</span>
+<span class="cmt">;   [ value pushed second                              ]</span>
+<span class="cmt">;   [ value pushed last   ] ← ESP points here (TOP)</span>
+<span class="cmt">; Lower memory address  ──────────────── top of stack</span></pre>
+  </div>
+</div>
+
+<!-- ═══════════════ 0/1/2/3 ADDRESS ═══════════════ -->
+<div class="panel" id="p-modes">
+  <div class="panel-header">
+    <span class="panel-num">15</span><h1>0 / 1 / 2 / 3-Address Modes</h1>
+  </div>
+  <p class="panel-sub">// Four ways to express the same calculation: a = (b + c) * (d - e)</p>
+  <div class="tabs">
+    <div class="tab active" onclick="itab(this,'t3')">3-address</div>
+    <div class="tab" onclick="itab(this,'t2')">2-address</div>
+    <div class="tab" onclick="itab(this,'t1')">1-address</div>
+    <div class="tab" onclick="itab(this,'t0')">0-address</div>
+  </div>
+  <div class="itab-panel active" id="t3">
+    <div class="card">
+      <div class="card-title">3-address — dest, src1, src2 (RISC style)</div>
+      <pre><span class="cmt">; a = (b + c) * (d - e)</span>
+<span class="kw">ADD</span> t1, b, c      <span class="cmt">; t1 = b + c</span>
+<span class="kw">SUB</span> t2, d, e      <span class="cmt">; t2 = d - e</span>
+<span class="kw">MUL</span> a,  t1, t2    <span class="cmt">; a  = t1 * t2</span>
+
+<span class="cmt">; format: mnemonic destination, source1, source2</span></pre>
+    </div>
+  </div>
+  <div class="itab-panel" id="t2">
+    <div class="card">
+      <div class="card-title">2-address — x86 style (destination is also source)</div>
+      <pre><span class="cmt">; a = (b + c) * (d - e)</span>
+<span class="kw">mov</span> eax, b        <span class="cmt">; eax = b</span>
+<span class="kw">add</span> eax, c        <span class="cmt">; eax = b + c</span>
+<span class="kw">mov</span> ebx, d        <span class="cmt">; ebx = d</span>
+<span class="kw">sub</span> ebx, e        <span class="cmt">; ebx = d - e</span>
+<span class="kw">mul</span> ebx           <span class="cmt">; eax = eax * ebx</span>
+<span class="kw">mov</span> a, eax        <span class="cmt">; store result in a</span>
+
+<span class="cmt">; format: mnemonic destination, source</span></pre>
+    </div>
+  </div>
+  <div class="itab-panel" id="t1">
+    <div class="card">
+      <div class="card-title">1-address — accumulator based (AC register)</div>
+      <pre><span class="cmt">; a = (b + c) * (d - e)</span>
+<span class="kw">LDA</span> b      <span class="cmt">; AC = b</span>
+<span class="kw">ADD</span> c      <span class="cmt">; AC = b + c</span>
+<span class="kw">STA</span> x      <span class="cmt">; x  = AC  (store temp)</span>
+
+<span class="kw">LDA</span> d      <span class="cmt">; AC = d</span>
+<span class="kw">SUB</span> e      <span class="cmt">; AC = d - e</span>
+<span class="kw">STA</span> y      <span class="cmt">; y  = AC  (store temp)</span>
+
+<span class="kw">LDA</span> x      <span class="cmt">; AC = x</span>
+<span class="kw">MUL</span> y      <span class="cmt">; AC = x * y</span>
+<span class="kw">STA</span> a      <span class="cmt">; a  = AC</span>
+
+<span class="cmt">; format: mnemonic [source]</span></pre>
+    </div>
+  </div>
+  <div class="itab-panel" id="t0">
+    <div class="card">
+      <div class="card-title">0-address — stack based (no operands needed)</div>
+      <pre><span class="cmt">; a = (b + c) * (d - e)</span>
+<span class="kw">PUSH</span> b     <span class="cmt">; stack: [b]</span>
+<span class="kw">PUSH</span> c     <span class="cmt">; stack: [b, c]</span>
+<span class="kw">ADD</span>        <span class="cmt">; stack: [b+c]      pops 2, pushes result</span>
+<span class="kw">PUSH</span> d     <span class="cmt">; stack: [b+c, d]</span>
+<span class="kw">PUSH</span> e     <span class="cmt">; stack: [b+c, d, e]</span>
+<span class="kw">SUB</span>        <span class="cmt">; stack: [b+c, d-e]</span>
+<span class="kw">MUL</span>        <span class="cmt">; stack: [(b+c)*(d-e)]</span>
+<span class="kw">POP</span> a      <span class="cmt">; a = result</span>
+
+<span class="cmt">; format: mnemonic  (no operands — uses TOS)</span></pre>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">summary table</div>
+    <table>
+      <tr><th>Mode</th><th>Format</th><th>Registers/Temp</th><th>Key opcodes</th></tr>
+      <tr><td>3-address</td><td>OP dst, src1, src2</td><td>t1, t2</td><td>ADD, SUB, MUL</td></tr>
+      <tr><td>2-address</td><td>OP dst, src</td><td>eax, ebx</td><td>MOV, ADD, SUB, MUL</td></tr>
+      <tr><td>1-address</td><td>OP src</td><td>AC, x, y</td><td>LDA, STA, ADD, SUB, MUL</td></tr>
+      <tr><td>0-address</td><td>OP</td><td>stack only</td><td>PUSH, POP, ADD, SUB, MUL</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ SKELETON ═══════════════ -->
+<div class="panel" id="p-skeleton">
+  <div class="panel-header">
+    <span class="panel-num">16</span><h1>Program Skeleton</h1>
+  </div>
+  <p class="panel-sub">// Minimum structure every MASM/NASM program needs.</p>
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">complete program structure</div>
+    <pre><span class="kw">section</span> .data
+    a      <span class="kw">DWORD</span>  <span class="num">5</span>
+    b      <span class="kw">DWORD</span>  <span class="num">3</span>
+    result <span class="kw">DWORD</span>  <span class="num">0</span>
+
+<span class="kw">section</span> .bss
+    buf    <span class="kw">RESD</span>   <span class="num">1</span>          <span class="cmt">; reserve 1 dword slot</span>
+
+<span class="kw">section</span> .text
+    <span class="kw">global</span> _start
+
+<span class="lbl">_start:</span>
+    <span class="kw">mov</span> eax, [a]
+    <span class="kw">add</span> eax, [b]
+    <span class="kw">mov</span> [result], eax
+
+    <span class="kw">mov</span> eax, <span class="num">1</span>              <span class="cmt">; syscall 1 = exit</span>
+    <span class="kw">xor</span> ebx, ebx            <span class="cmt">; exit code 0</span>
+    <span class="kw">int</span> <span class="num">0x80</span>                <span class="cmt">; call the kernel</span></pre>
+  </div>
+  <div class="card">
+    <div class="card-title">print a string to screen (Linux syscall)</div>
+    <pre><span class="kw">section</span> .data
+    msg <span class="kw">db</span> <span class="str">"Hello!"</span>, <span class="num">0xA</span>    <span class="cmt">; 0xA = newline character</span>
+    len <span class="kw">equ</span> $ - msg          <span class="cmt">; auto-calculate string length</span>
+
+<span class="lbl">_start:</span>
+    <span class="kw">mov</span> eax, <span class="num">4</span>              <span class="cmt">; syscall 4 = sys_write</span>
+    <span class="kw">mov</span> ebx, <span class="num">1</span>              <span class="cmt">; 1 = stdout (screen)</span>
+    <span class="kw">mov</span> ecx, msg            <span class="cmt">; pointer to the string</span>
+    <span class="kw">mov</span> edx, len            <span class="cmt">; number of bytes to print</span>
+    <span class="kw">int</span> <span class="num">0x80</span>                <span class="cmt">; ← this actually prints it!</span></pre>
+  </div>
+  <div class="tip">📌 3 sections every program needs: .data (vars with values) → .bss (empty slots) → .text (your code). Entry point = _start.</div>
+</div>
+
+<!-- ═══════════════ CLASS ACTIVITIES ═══════════════ -->
+<div class="panel" id="p-activities">
+  <div class="panel-header">
+    <span class="panel-num">17</span><h1>Class Activities & Answers</h1>
+  </div>
+  <p class="panel-sub">// All activities from lectures 1–5 with complete solutions.</p>
+
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">activity 1 — flag values after each instruction</div>
+    <pre><span class="kw">mov</span> al, 00001111b
+<span class="kw">test</span> al, 00000010b    <span class="cmt">; CF=0  ZF=1  SF=0   (result=0, no bits overlap)</span>
+
+<span class="kw">mov</span> al, 00000110b
+<span class="kw">cmp</span> al, 00000101b     <span class="cmt">; CF=0  ZF=0  SF=0   (6-5=1, positive, nonzero)</span>
+
+<span class="kw">mov</span> al, 00000101b
+<span class="kw">cmp</span> al, 00000111b     <span class="cmt">; CF=1  ZF=0  SF=1   (5-7 needs borrow → CF=1, negative → SF=1)</span></pre>
+  </div>
+
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">activity 2 — clear high 8 bits of AX, keep low 8 bits</div>
+    <pre><span class="kw">and</span> ax, <span class="num">00FFh</span>    <span class="cmt">; clears AH (high byte), preserves AL (low byte)</span>
+<span class="cmt">; 00FFh = 00000000 11111111 — zeros in top, ones in bottom</span></pre>
+  </div>
+
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">activity 3 — sum DWORD array with loop</div>
+    <pre>intarray <span class="kw">DWORD</span> <span class="num">10000h</span>,<span class="num">20000h</span>,<span class="num">30000h</span>,<span class="num">40000h</span>
+
+<span class="kw">mov</span> edi, OFFSET intarray    <span class="cmt">; EDI = address of array</span>
+<span class="kw">mov</span> ecx, LENGTHOF intarray  <span class="cmt">; ECX = 4</span>
+<span class="kw">mov</span> eax, <span class="num">0</span>                  <span class="cmt">; sum = 0</span>
+<span class="lbl">L1:</span>
+    <span class="kw">add</span> eax, [edi]           <span class="cmt">; sum += current element</span>
+    <span class="kw">add</span> edi, TYPE intarray   <span class="cmt">; edi += 4 (next dword)</span>
+    <span class="kw">loop</span> <span class="lbl">L1</span>                 <span class="cmt">; ECX-- ; repeat until 0</span>
+<span class="cmt">; EAX = A0000h (result)</span></pre>
+  </div>
+
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">activity 4 — copy string with loop</div>
+    <pre>source <span class="kw">BYTE</span> <span class="str">"This is the source string"</span>,<span class="num">0</span>
+target <span class="kw">BYTE</span> SIZEOF source <span class="kw">DUP</span>(<span class="num">0</span>)
+
+<span class="kw">mov</span> esi, <span class="num">0</span>              <span class="cmt">; index = 0</span>
+<span class="kw">mov</span> ecx, SIZEOF source  <span class="cmt">; loop counter</span>
+<span class="lbl">L1:</span>
+    <span class="kw">mov</span> al, source[esi]  <span class="cmt">; get char from source</span>
+    <span class="kw">mov</span> target[esi], al  <span class="cmt">; store in target</span>
+    <span class="kw">inc</span> esi
+    <span class="kw">loop</span> <span class="lbl">L1</span>
+<span class="cmt">; Note: MOV can't have two memory operands, so AL is the middleman</span></pre>
+  </div>
+
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">activity 5 — convert array to uppercase</div>
+    <pre>array <span class="kw">BYTE</span> <span class="str">"This Sentence is in Mixed Case"</span>, <span class="num">0</span>
+
+<span class="kw">mov</span> ecx, LENGTHOF array
+<span class="kw">mov</span> esi, OFFSET array
+<span class="lbl">L1:</span>
+    <span class="kw">and</span> BYTE PTR [esi], <span class="num">11011111b</span>  <span class="cmt">; clear bit 5 → uppercase</span>
+    <span class="kw">inc</span> esi
+    <span class="kw">loop</span> <span class="lbl">L1</span>
+<span class="cmt">; Bit 5 = 0 → uppercase.  Bit 5 = 1 → lowercase</span></pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">activity 6 — nested loop: what is final EAX?</div>
+    <pre><span class="kw">mov</span> eax, <span class="num">0</span>
+<span class="kw">mov</span> ecx, <span class="num">10</span>
+<span class="lbl">L1:</span>
+    <span class="kw">mov</span> eax, <span class="num">3</span>      <span class="cmt">; ← resets EAX to 3 EVERY outer iteration</span>
+    <span class="kw">mov</span> ecx, <span class="num">5</span>      <span class="cmt">; ← OVERWRITES ECX! outer loop loses its count</span>
+<span class="lbl">L2:</span>
+    <span class="kw">add</span> eax, <span class="num">5</span>
+    <span class="kw">loop</span> <span class="lbl">L2</span>        <span class="cmt">; runs 5 times: EAX = 3 + (5×5) = 28</span>
+    <span class="kw">loop</span> <span class="lbl">L1</span>        <span class="cmt">; ECX is now 0 after L2, so L1 runs only ONCE</span>
+
+<span class="cmt">; Answer: EAX = 28</span>
+<span class="cmt">; Why: inner loop overwrites ECX=5, L2 runs 5×, then ECX=0 → L1 exits immediately</span></pre>
+  </div>
+</div>
+
+</main>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('p-' + id).classList.add('active');
+  btn.classList.add('active');
+  document.querySelector('main').scrollTop = 0;
+}
+function itab(el, id) {
+  const panel = el.closest('.panel');
+  panel.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  panel.querySelectorAll('.itab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
