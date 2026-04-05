@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Delete at Head – DSAlingo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#080a08;--card:#0e100e;--border:#1c201c;--border2:#25302a;--accent:#ff9f43;--glow:rgba(255,159,67,.35);--text:#fff8f0;--text2:#9090b0;--muted:#555;}
+html,body{height:100%;}
+body{display:grid;grid-template-columns:250px 1fr 340px;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,159,67,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,159,67,.015) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0;}
+.sidebar{background:var(--card);border-right:1.5px solid var(--border);padding:24px 18px;font-size:.8rem;line-height:1.85;overflow-y:auto;position:relative;z-index:1;}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.72rem;font-family:'JetBrains Mono',monospace;text-decoration:none;margin-bottom:18px;transition:color .2s;}
+.back-link:hover{color:var(--accent);}
+.op-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,var(--accent),#ffeaa7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.op-sub{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.7rem;margin-bottom:18px;}
+.info-block{background:#0a0c0a;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;}
+.info-label{font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:1.5px;font-weight:800;margin-bottom:8px;}
+.step-item{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:.75rem;color:var(--text2);}
+.step-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;font-family:'Syne',sans-serif;margin-top:1px;}
+.d1{background:rgba(255,159,67,.2);color:#ff9f43;border:1px solid #ff9f4355;}
+.d2{background:rgba(34,197,94,.2);color:#22c55e;border:1px solid #22c55e55;}
+.d3{background:rgba(239,68,68,.2);color:#ef4444;border:1px solid #ef444455;}
+.complexity{display:flex;flex-direction:column;gap:6px;}
+.cx-row{display:flex;justify-content:space-between;align-items:center;font-size:.73rem;}
+.cx-badge{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:2px 8px;border-radius:4px;}
+.cx-green{background:rgba(34,197,94,.12);color:#22c55e;}
+.center{display:flex;flex-direction:column;gap:10px;padding:18px 20px;overflow-y:auto;position:relative;z-index:1;}
+.status-bar{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:10px 16px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:800;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+.scene-wrap{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px 8px 20px;display:flex;align-items:flex-start;justify-content:center;overflow:visible;position:relative;}
+#scene{position:relative;width:680px;height:240px;transform-origin:top center;flex-shrink:0;}
+#svg-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
+.node-block{position:absolute;display:flex;align-items:center;will-change:left,top,opacity,transform;}
+.node{display:flex;border-radius:9px;overflow:hidden;border:2px solid transparent;transition:border-color .35s,box-shadow .35s;flex-shrink:0;}
+.node.hl-orange{border-color:#ff9f43;box-shadow:0 0 18px rgba(255,159,67,.4);}
+.node.hl-red{border-color:#ef4444;box-shadow:0 0 18px #ef444455;}
+.node.hl-green{border-color:#22c55e;box-shadow:0 0 18px #22c55e55;}
+.node .data{min-width:50px;padding:10px 11px;background:linear-gradient(135deg,#431407,#c2410c);font-weight:700;font-size:.83rem;text-align:center;color:#fff;font-family:'JetBrains Mono',monospace;}
+.node .nxt{min-width:38px;padding:10px 6px;background:#0c1020;color:#3a4060;font-size:.58rem;text-align:center;border-left:2px solid #050810;font-family:'JetBrains Mono',monospace;}
+.lbl{position:absolute;padding:6px 9px;background:#0d0d1e;border:1.5px solid #1e1e35;border-radius:7px;font-size:.68rem;color:#7070a0;font-weight:700;white-space:nowrap;transition:left .6s cubic-bezier(.65,0,.35,1),top .6s;font-family:'JetBrains Mono',monospace;}
+.input-row{display:flex;gap:10px;align-items:center;justify-content:center;}
+.buttons{display:flex;gap:10px;justify-content:center;}
+button{padding:11px 22px;font-size:.75rem;cursor:pointer;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;letter-spacing:.8px;text-transform:uppercase;transition:all .2s;}
+button:hover:not(:disabled){transform:translateY(-2px);}
+button:disabled{opacity:.3;cursor:not-allowed;}
+#nextStep{background:var(--accent);color:#fff;box-shadow:0 3px 14px var(--glow);}
+#nextStep:hover:not(:disabled){box-shadow:0 6px 22px var(--glow);}
+#prevStep,#newArray{background:var(--card);color:var(--text2);border:1.5px solid var(--border2);}
+.exp-text{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.77rem;text-align:center;min-height:42px;display:flex;align-items:center;justify-content:center;color:var(--text2);}
+.code-panel{background:#060810;border-left:1.5px solid var(--border);padding:48px 16px 16px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;overflow-y:auto;position:relative;z-index:1;color:#8888aa;}
+.code-panel div{padding:2px 6px;border-radius:3px;transition:all .22s;}
+.highlight{background:rgba(255,159,67,.15);border-left:2.5px solid var(--accent);color:#fff2e0;padding-left:10px;margin-left:-4px;}
+.lang-sel-wrap{position:absolute;top:12px;right:12px;}
+.lang-dropdown{background:#0e0e1a;color:#8888aa;border:1.5px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:.72rem;cursor:pointer;font-family:'JetBrains Mono',monospace;outline:none;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <a href="index.html" class="back-link">← back to hub</a>
+  <div class="op-title">Delete at Head</div>
+  <div class="op-sub">// remove_front()</div>
+  <div class="info-block">
+    <div class="info-label" style="color:#ff9f43;">ALGORITHM STEPS</div>
+    <div class="step-item"><div class="step-dot d1">1</div><span>Check if list is empty → nothing to delete</span></div>
+    <div class="step-item"><div class="step-dot d2">2</div><span>Save HEAD's next pointer as new HEAD</span></div>
+    <div class="step-item"><div class="step-dot d3">3</div><span>Free / discard the old head node</span></div>
+  </div>
+  <div class="info-block">
+    <div class="info-label" style="color:#555;">COMPLEXITY</div>
+    <div class="complexity">
+      <div class="cx-row"><span>Time</span><span class="cx-badge cx-green">O(1)</span></div>
+      <div class="cx-row"><span>Space</span><span class="cx-badge cx-green">O(1)</span></div>
+    </div>
+  </div>
+  <div class="info-block" style="color:var(--text2);font-size:.76rem;">
+    <div class="info-label" style="color:#555;">NOTE</div>
+    Deleting at head is always O(1) — HEAD just skips forward one step. No traversal needed.
+  </div>
+</div>
+<div class="center">
+  <div class="status-bar" id="iterLabel">Click Next Step to delete the head node</div>
+  <div class="scene-wrap">
+    <div id="scene">
+      <svg id="svg-overlay">
+        <defs>
+          <marker id="mh-n" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#3a4060"/></marker>
+          <marker id="mh-o" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#ff9f43"/></marker>
+        </defs>
+        <line id="svg-head-arrow" x1="0" y1="0" x2="0" y2="0" stroke="#3a4060" stroke-width="2" marker-end="url(#mh-n)"/>
+        <g id="svg-node-arrows"></g>
+      </svg>
+      <div class="lbl" id="lbl-head">HEAD</div>
+      <div class="lbl" id="lbl-null">NULL</div>
+    </div>
+  </div>
+  <div class="buttons">
+    <button id="prevStep">← Prev</button>
+    <button id="nextStep">Next →</button>
+    <button id="newArray">Reset</button>
+  </div>
+  <div class="exp-text" id="explanationText">The head node will be removed. Step through to see how.</div>
+</div>
+<div class="code-panel" id="codeBlock">
+  <div class="lang-sel-wrap"><select class="lang-dropdown" id="langSelect"><option value="cpp">C++</option><option value="python">Python</option><option value="pseudo">Pseudo</option></select></div>
+</div>
+<script>
+const SW=680,NW=88,NH=38,AW=26,HW=52,NLW=44,ROW1_Y=76,ROW2_Y=178,MAX_ROW=4;
+const CODE={
+  cpp:['int deleteAtHead(Node*& head) {','    // Check empty list','    if (head == nullptr) return -1;','','    // Step 1: Save old head','    Node* temp = head;','    int deletedVal = temp->data;','','    // Step 2: Move head forward','    head = head->next;','','    // Step 3: Free old head','    delete temp;','    return deletedVal;','}'],
+  python:['def delete_at_head(head):','    # Check empty list','    if head is None:','        return None, None','','    # Step 1: Save deleted value','    deleted_val = head.data','','    # Step 2: Move head forward','    head = head.next','','    return head, deleted_val'],
+  pseudo:['FUNCTION DeleteAtHead(head):','    IF head == NULL THEN','        RETURN NULL','    END IF','','    deletedVal <- head.data','    oldHead <- head','','    head <- head.next','    FREE oldHead','','    RETURN head, deletedVal','END FUNCTION']
+};
+const HL={cpp:{check:2,save:5,move:9,free:12},python:{check:2,save:6,move:9},pseudo:{check:1,save:5,move:8,free:9}};
+let nodes=[10,20,30,40],lang='cpp',phase='idle',history=[];
+const iterLabel=document.getElementById('iterLabel'),expText=document.getElementById('explanationText');
+const nextBtn=document.getElementById('nextStep'),prevBtn=document.getElementById('prevStep');
+document.getElementById('langSelect').addEventListener('change',e=>{lang=e.target.value;renderCode();});
+function calcLayout(n){
+  const r1=Math.min(n,MAX_ROW),r2=Math.max(0,n-MAX_ROW),baseX=14,firstNX=baseX+HW+AW,step=NW+AW;
+  const row1Xs=Array.from({length:r1},(_,i)=>firstNX+i*step);
+  const row2RightX=r1>0?row1Xs[r1-1]:firstNX;
+  const row2Xs=Array.from({length:r2},(_,i)=>row2RightX-i*step);
+  let nullX,nullY;
+  if(r2>0){nullX=row2Xs[r2-1]-AW-NLW;nullY=ROW2_Y-16;}else{nullX=firstNX+r1*step;nullY=ROW1_Y-16;}
+  return{headX:baseX,row1Xs,row2Xs,r1,r2,nullX,nullY};
+}
+function nodePos(i,lay){if(i<lay.r1)return{x:lay.row1Xs[i],y:ROW1_Y-NH/2};return{x:lay.row2Xs[i-lay.r1],y:ROW2_Y-NH/2};}
+function scaleScene(){const wrap=document.querySelector('.scene-wrap'),sc=document.getElementById('scene');const s=Math.min(1,(wrap.clientWidth-20)/SW);sc.style.transform=`scale(${s})`;wrap.style.minHeight=(240*s+40)+'px';}
+scaleScene();window.addEventListener('resize',scaleScene);
+function buildDOM(){
+  document.getElementById('scene').querySelectorAll('.node-block').forEach(e=>e.remove());
+  const lay=calcLayout(nodes.length);
+  document.getElementById('lbl-head').style.transition='none';document.getElementById('lbl-head').style.left=lay.headX+'px';document.getElementById('lbl-head').style.top=(ROW1_Y-16)+'px';
+  document.getElementById('lbl-null').style.transition='none';document.getElementById('lbl-null').style.left=lay.nullX+'px';document.getElementById('lbl-null').style.top=lay.nullY+'px';
+  nodes.forEach((v,i)=>{
+    const pos=nodePos(i,lay),b=document.createElement('div');b.className='node-block';b.id='block-'+i;
+    b.style.cssText=`left:${pos.x}px;top:${pos.y}px;width:${NW}px;`;
+    b.innerHTML=`<div class="node" id="nd-${i}"><div class="data">${v}</div><div class="nxt">next</div></div>`;
+    document.getElementById('scene').appendChild(b);
+  });
+  drawArrows();
+}
+function makeLine(x1,y1,x2,y2){const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);l.setAttribute('stroke','#3a4060');l.setAttribute('stroke-width','2');l.setAttribute('marker-end','url(#mh-n)');return l;}
+function drawArrows(){
+  const lay=calcLayout(nodes.length),g=document.getElementById('svg-node-arrows');g.innerHTML='';
+  if(lay.r1===0)return;
+  const ha=document.getElementById('svg-head-arrow');
+  ha.setAttribute('x1',lay.headX+HW+2);ha.setAttribute('y1',ROW1_Y);ha.setAttribute('x2',lay.row1Xs[0]-2);ha.setAttribute('y2',ROW1_Y);
+  ha.setAttribute('stroke','#3a4060');ha.setAttribute('marker-end','url(#mh-n)');
+  for(let i=0;i<lay.r1-1;i++)g.appendChild(makeLine(lay.row1Xs[i]+NW+2,ROW1_Y,lay.row1Xs[i+1]-2,ROW1_Y));
+  if(lay.r2===0){g.appendChild(makeLine(lay.row1Xs[lay.r1-1]+NW+2,ROW1_Y,lay.nullX-2,ROW1_Y));}
+  else{
+    const ux1=lay.row1Xs[lay.r1-1]+NW,uy1=ROW1_Y,ux2=lay.row2Xs[0]+NW,uy2=ROW2_Y,cx=ux1+34;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',`M ${ux1} ${uy1} C ${cx} ${uy1}, ${cx} ${uy2}, ${ux2} ${uy2}`);
+    p.setAttribute('fill','none');p.setAttribute('stroke','#3a4060');p.setAttribute('stroke-width','2');p.setAttribute('marker-end','url(#mh-n)');g.appendChild(p);
+    for(let i=0;i<lay.r2-1;i++)g.appendChild(makeLine(lay.row2Xs[i]-2,ROW2_Y,lay.row2Xs[i+1]+NW+2,ROW2_Y));
+    g.appendChild(makeLine(lay.row2Xs[lay.r2-1]-2,ROW2_Y,lay.nullX+NLW+2,ROW2_Y));
+  }
+}
+function renderCode(hl=null){
+  const lines=CODE[lang],sel=document.querySelector('.lang-sel-wrap');
+  document.getElementById('codeBlock').innerHTML=lines.map((l,i)=>`<div class="${hl===i?'highlight':''}">${l.replace(/</g,'&lt;').replace(/>/g,'&gt;')||'&nbsp;'}</div>`).join('');
+  document.getElementById('codeBlock').appendChild(sel);
+}
+function setLabel(text,bg){iterLabel.textContent=text;iterLabel.style.background=bg||'var(--card)';iterLabel.style.color=bg?'#fff':'var(--text)';}
+function saveState(){history.push({nodes:[...nodes],phase,label:iterLabel.innerHTML,labelBg:iterLabel.style.background,exp:expText.textContent});}
+nextBtn.addEventListener('click',()=>{
+  if(nodes.length===0){expText.textContent='List is empty — nothing to delete!';return;}
+  if(phase==='idle'){saveState();phase='highlight';doStep();}
+  else if(phase==='highlight'){saveState();phase='moveHead';doStep();}
+  else if(phase==='moveHead'){saveState();phase='done';doStep();}
+  else if(phase==='done'){phase='idle';setLabel('Click Next Step to delete the head node');expText.textContent='Step through again to delete the new head';renderCode();}
+  prevBtn.disabled=history.length===0;
+});
+function doStep(){
+  const lines=HL[lang],lay=calcLayout(nodes.length);
+  if(phase==='highlight'){
+    setLabel('Marking head node ['+nodes[0]+'] for deletion','linear-gradient(135deg,#431407,#c2410c)');
+    renderCode(lines.save);expText.textContent='Save the current HEAD so we can free it later. HEAD is ['+nodes[0]+']';
+    document.getElementById('nd-0')?.classList.add('hl-orange');
+  } else if(phase==='moveHead'){
+    if(nodes.length<2){
+      setLabel('List had only 1 node — HEAD = NULL','linear-gradient(135deg,#431407,#c2410c)');
+      expText.textContent='Only one node existed. HEAD is now NULL.';
+    } else {
+      setLabel('HEAD jumps to ['+nodes[1]+']','linear-gradient(135deg,#064e3b,#059669)');
+      renderCode(lines.move);expText.textContent='HEAD now points to the next node ['+nodes[1]+']';
+      const fl=calcLayout(nodes.length-1);
+      const ha=document.getElementById('svg-head-arrow');ha.setAttribute('stroke','#ff9f43');ha.setAttribute('marker-end','url(#mh-o)');
+      const lh=document.getElementById('lbl-head');lh.style.transition='left .55s cubic-bezier(.4,0,.2,1)';
+      lh.style.left=fl.headX+'px';
+      const oX1=parseFloat(ha.getAttribute('x1')),oX2=parseFloat(ha.getAttribute('x2')),mY=ROW1_Y;
+      const nX1=fl.headX+HW+2,nX2=fl.row1Xs[0]-2;
+      const st=performance.now(),dur=520,ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+      (function f(now){const t=Math.min((now-st)/dur,1),e=ease(t);ha.setAttribute('x1',oX1+(nX1-oX1)*e);ha.setAttribute('y1',mY);ha.setAttribute('x2',oX2+(nX2-oX2)*e);ha.setAttribute('y2',mY);t<1&&requestAnimationFrame(f);})(performance.now());
+    }
+    // fade out old head
+    const b0=document.getElementById('block-0');
+    if(b0){b0.style.transition='opacity .6s,transform .6s';b0.style.opacity='0';b0.style.transform='translateY(-30px)';}
+  } else if(phase==='done'){
+    const deleted=nodes[0];nodes.shift();
+    buildDOM();
+    setLabel('✓ Node ['+deleted+'] deleted!','linear-gradient(135deg,#7c2d12,#ff9f43)');
+    expText.textContent='List is now: '+nodes.join(' → ')+(nodes.length?'':'(empty)')+' → NULL';renderCode();
+    if(nodes.length>0){document.getElementById('nd-0')?.classList.add('hl-green');setTimeout(()=>document.getElementById('nd-0')?.classList.remove('hl-green'),700);}
+  }
+  prevBtn.disabled=history.length===0;
+}
+prevBtn.addEventListener('click',()=>{
+  if(!history.length)return;const s=history.pop();
+  nodes=s.nodes;phase=s.phase;iterLabel.innerHTML=s.label;iterLabel.style.background=s.labelBg;expText.textContent=s.exp;
+  buildDOM();renderCode();nextBtn.disabled=false;if(!history.length)prevBtn.disabled=true;
+});
+document.getElementById('newArray').addEventListener('click',()=>{
+  nodes=[10,20,30,40];phase='idle';history=[];buildDOM();renderCode();prevBtn.disabled=true;nextBtn.disabled=false;
+  setLabel('Click Next Step to delete the head node');expText.textContent='List reset to [10 → 20 → 30 → 40]';
+});
+buildDOM();renderCode();prevBtn.disabled=true;
+</script>
+</body>
+</html>
